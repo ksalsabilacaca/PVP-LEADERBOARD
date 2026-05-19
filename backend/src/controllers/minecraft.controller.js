@@ -1,0 +1,37 @@
+const MinecraftScore = require('../models/minecraft.model');
+
+const saveScore = async (req, res) => {
+  const { username, score } = req.body;
+
+  if (!username || typeof score !== 'number') {
+    return res.status(400).json({ error: 'Requires username and score' });
+  }
+
+  try {
+    await MinecraftScore.findOneAndUpdate(
+      { username },
+      { score },
+      { upsert: true, new: true }
+    );
+    res.status(200).json({ message: 'Score saved successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to write to database' });
+  }
+};
+
+const getScores = async (req, res) => {
+  try {
+    const topScores = await MinecraftScore.find().sort({ score: -1 }).limit(100);
+    const formattedScores = topScores.map(s => ({ value: s.username, score: s.score }));
+    res.status(200).json(formattedScores);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to read from database' });
+  }
+};
+
+module.exports = {
+  saveScore,
+  getScores
+};
