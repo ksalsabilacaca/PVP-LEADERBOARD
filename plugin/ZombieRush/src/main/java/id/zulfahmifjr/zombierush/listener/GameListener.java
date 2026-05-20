@@ -30,14 +30,16 @@ public class GameListener implements Listener {
     @EventHandler
     public void onInteractNpc(PlayerInteractEntityEvent event) {
         Entity entity = event.getRightClicked();
-        if (!plugin.getJoinNpcManager().isJoinNpc(entity)) return;
+        if (!plugin.getJoinNpcManager().isJoinNpc(entity))
+            return;
         event.setCancelled(true);
         plugin.getMatchManager().requestStart(event.getPlayer());
     }
 
     @EventHandler
     public void onDamageNpc(EntityDamageByEntityEvent event) {
-        if (!plugin.getJoinNpcManager().isJoinNpc(event.getEntity())) return;
+        if (!plugin.getJoinNpcManager().isJoinNpc(event.getEntity()))
+            return;
         event.setCancelled(true);
         if (event.getDamager() instanceof Player player) {
             plugin.getMatchManager().requestStart(player);
@@ -67,8 +69,10 @@ public class GameListener implements Listener {
 
     @EventHandler
     public void onZombieDeath(EntityDeathEvent event) {
-        if (!(event.getEntity() instanceof Zombie zombie)) return;
-        if (!plugin.isArenaZombie(zombie)) return;
+        if (!(event.getEntity() instanceof Zombie zombie))
+            return;
+        if (!plugin.isArenaZombie(zombie))
+            return;
         event.getDrops().clear();
         event.setDroppedExp(0);
         Player killer = zombie.getKiller();
@@ -80,6 +84,8 @@ public class GameListener implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
+        event.setQuitMessage(Msg.color("&eSampai jumpa, &f" + player.getName()
+                + "&e. Terima kasih sudah bermain di ZombieRush."));
         plugin.getMatchManager().removeFromQueue(player.getUniqueId());
         if (plugin.getMatchManager().isInMatch(player.getUniqueId())) {
             plugin.getMatchManager().finishMatch(player, EndReason.QUIT);
@@ -90,7 +96,8 @@ public class GameListener implements Listener {
     public void onBreak(BlockBreakEvent event) {
         if (plugin.getMatchManager().isInMatch(event.getPlayer().getUniqueId())) {
             event.setCancelled(true);
-            Msg.warn(event.getPlayer(), plugin.getConfig(), "Anda tidak dapat menghancurkan blok selama sesi Zombie Rush.");
+            Msg.warn(event.getPlayer(), plugin.getConfig(),
+                    "Anda tidak dapat menghancurkan blok selama sesi Zombie Rush.");
         }
     }
 

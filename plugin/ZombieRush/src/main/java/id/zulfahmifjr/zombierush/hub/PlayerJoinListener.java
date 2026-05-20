@@ -20,13 +20,15 @@ public class PlayerJoinListener implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        event.setJoinMessage(Msg.color("&aSelamat datang, &f" + player.getName()
+                + "&a! Selamat bermain di ZombieRush."));
         if (!hubManager.isTeleportOnJoinEnabled())
             return;
         World hub = hubManager.getHubWorld();
         if (hub == null)
             return;
 
-        Player player = event.getPlayer();
         player.teleport(hub.getSpawnLocation());
         player.setGameMode(GameMode.ADVENTURE);
         player.getInventory().clear();
