@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <rect width="256" height="256" rx="48" fill="#050816"></rect>
+  <path d="M70 102C82 82 101 78 128 88C155 78 174 82 186 102C202 130 211 181 194 194C181 204 160 183 145 174H111C96 183 75 204 62 194C45 181 54 130 70 102Z" fill="url(#g)"></path>
+  <text x="128" y="145" text-anchor="middle" font-size="42" font-family="Arial, sans-serif" font-weight="900" fill="#ffffff">RPS</text>
+  <circle cx="91" cy="111" r="12" fill="#7c6ff6"></circle>
+  <circle cx="163" cy="101" r="8" fill="#22d3ee"></circle>
+  <circle cx="181" cy="113" r="8" fill="#fb7185"></circle>
+  <circle cx="169" cy="132" r="8" fill="#22c55e"></circle>
+  <defs>
+    <linearGradient id="g" x1="54" y1="82" x2="204" y2="204">
+      <stop stop-color="#4f46e5"></stop>
+      <stop offset="1" stop-color="#ec4899"></stop>
+    </linearGradient>
+  </defs>
+</svg>

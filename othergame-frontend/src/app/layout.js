@@ -1,8 +1,13 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "RPS Arena - Rock Paper Scissors",
-  description: "A premium best-of-3 Rock-Paper-Scissors game against AI with real-time global leaderboard integration.",
+  title: "RPS Arena | MinPro SBD 3",
+  description: "Rock Paper Scissors leaderboard game for Mini Project SBD Kelompok 3.",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({ children }) {
