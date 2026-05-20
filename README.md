@@ -1,3 +1,10 @@
+# Group 3 - SBD 01:
+1. Jesaya Hamonangan Gaudensius Malau (2406409845)
+2. Naziehan Labieb (2406487102)
+3. Salsabila Maharani Mumtaz (2406348156)
+4. Syifa Aulia Azhim (2406413445)
+5. Zulfahmi Fajri (2406345425)
+
 # PVP Leaderboard
 
 Platform leaderboard multi-game yang menggabungkan backend API, dua frontend web, dan plugin Minecraft. Data ZombieRush disimpan di Redis oleh plugin dan dibaca backend. Data OtherGame disimpan di MongoDB oleh backend. Frontend mengonsumsi API dan SSE untuk update realtime.
