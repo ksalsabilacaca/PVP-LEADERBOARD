@@ -2,12 +2,14 @@ package id.zulfahmifjr.zombierush.hub;
 
 import id.zulfahmifjr.zombierush.util.Msg;
 import org.bukkit.GameMode;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.ItemStack;
 
 public class PlayerJoinListener implements Listener {
     private final HubManager hubManager;
@@ -27,6 +29,9 @@ public class PlayerJoinListener implements Listener {
         Player player = event.getPlayer();
         player.teleport(hub.getSpawnLocation());
         player.setGameMode(GameMode.ADVENTURE);
+        player.getInventory().clear();
+        player.getInventory().setArmorContents(null);
+        player.getInventory().setItemInOffHand(new ItemStack(Material.AIR));
         double maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH) == null
                 ? 20.0D
                 : player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
