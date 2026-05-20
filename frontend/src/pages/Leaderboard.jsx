@@ -1,31 +1,13 @@
 import { useEffect, useState } from "react";
 import MainLayout from "../layouts/MainLayout";
-import { getLeaderboard, getStats, getRobloxLeaderboard } from "../services/api";
+import { getRobloxLeaderboard } from "../services/api";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+const EMPTY_TIMING = { fetchMs: 0, processMs: 0, totalMs: 0 };
 
-function getModeLabel(activeTab) {
-  if (activeTab === "minecraft-best") return "ZOMBIERUSH • BEST SCORE";
-  if (activeTab === "minecraft-total") return "ZOMBIERUSH • TOTAL SCORE";
-  if (activeTab === "roblox") return "ROCK PAPER SCISSORS";
-  return "SEMUA GAME";
-}
-
-function getGameLabel(activeTab, player) {
-  if (activeTab === "minecraft-best" || activeTab === "minecraft-total") {
-    return "ZombieRush";
-  }
-
-  if (activeTab === "roblox") {
-    return "Rock Paper Scissors";
-  }
-
-  return player.game || "Game";
-}
-
-function getPlayerName(player, index) {
-  const uuid = player.uuid || "";
-  const rawName = player.username || player.playerName || player.name || "";
+function resolvePlayerName(player, index) {
+  const uuid = player.uuid || player.id || "";
+  const rawName = player.playerName || player.username || player.name || "";
 
   if (rawName && rawName !== uuid) {
     return rawName;
@@ -38,16 +20,40 @@ function getPlayerName(player, index) {
   return `Player ${index + 1}`;
 }
 
-function normalizePlayers(data, activeTab) {
-  const list = Array.isArray(data) ? data : data?.value || [];
+function normalizeZombieRush(data) {
+  const list = Array.isArray(data) ? data : [];
 
   return list.map((player, index) => ({
     rank: player.rank ?? index + 1,
-    uuid: player.uuid || player.id || "",
-    username: getPlayerName(player, index),
-    trophy: Number(player.trophy ?? player.score ?? 0),
-    game: getGameLabel(activeTab, player),
+    uuid: player.uuid || "",
+    username: resolvePlayerName(player, index),
+    score: Number(player.score ?? 0),
+    game: "ZombieRush",
   }));
+}
+
+function normalizeRps(data) {
+  const list = Array.isArray(data) ? data : [];
+
+  return list.map((player, index) => ({
+    rank: player.rank ?? index + 1,
+    uuid: player.uuid || "",
+    username: resolvePlayerName(player, index),
+    score: Number(player.score ?? player.trophy ?? 0),
+    game: "Rock Paper Scissors",
+  }));
+}
+
+function buildTiming(fetchStart, fetchEnd, processEnd) {
+  const fetchMs = fetchEnd - fetchStart;
+  const processMs = processEnd - fetchEnd;
+  const totalMs = processEnd - fetchStart;
+
+  return { fetchMs, processMs, totalMs };
+}
+
+function formatMs(value) {
+  return `${value.toFixed(2)} ms`;
 }
 
 async function getZombieRushLeaderboard(type) {
@@ -62,13 +68,34 @@ async function getZombieRushLeaderboard(type) {
 
 function Leaderboard() {
   const [players, setPlayers] = useState([]);
-  const [stats, setStats] = useState({});
-  const [activeTab, setActiveTab] = useState("minecraft-best");
+  const [zombieRushPlayers, setZombieRushPlayers] = useState([]);
+  const [rpsPlayers, setRpsPlayers] = useState([]);
+  const [timings, setTimings] = useState({ zombierush: EMPTY_TIMING, rps: EMPTY_TIMING });
+  const [activeTab, setActiveTab] = useState("zombierush");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const modeLabel = getModeLabel(activeTab);
+  const modeLabel =
+    activeTab === "zombierush"
+      ? "BEST ZOMBIERUSH"
+      : activeTab === "rps"
+      ? "BEST ROCK PAPER SCISSORS"
+      : "ALL GAME";
+
+  const headerTitle =
+    activeTab === "zombierush"
+      ? ["LEADERBOARD", "ZOMBIERUSH"]
+      : activeTab === "rps"
+      ? ["LEADERBOARD", "ROCK PAPER SCISSORS"]
+      : ["LEADERBOARD", "ALL GAME"];
+
+  const headerSubtitle =
+    activeTab === "zombierush"
+      ? "Peringkat berdasarkan skor tertinggi pemain ZombieRush."
+      : activeTab === "rps"
+      ? "Peringkat berdasarkan skor terbaik pemain Rock Paper Scissors."
+      : "Perbandingan leaderboard dan waktu proses data dari ZombieRush dan Rock Paper Scissors.";
 
   // Koneksi SSE realtime dari backend teman.
   // Jika ada update score, frontend akan refresh data.
@@ -101,25 +128,26 @@ function Leaderboard() {
     async function fetchData() {
       setLoading(true);
       setErrorMessage("");
-      setPlayers([]);
 
       try {
-        const statsData = await getStats().catch(() => ({}));
-        setStats(statsData || {});
-
-        let data = [];
-
         if (activeTab === "all") {
-          data = await getLeaderboard();
-        } else if (activeTab === "minecraft-best") {
-          data = await getZombieRushLeaderboard("best");
-        } else if (activeTab === "minecraft-total") {
-          data = await getZombieRushLeaderboard("total");
-        } else if (activeTab === "roblox") {
-          data = await getRobloxLeaderboard();
-        }
+          const [zombieRushResult, rpsResult] = await Promise.all([
+            fetchZombieRushBest(),
+            fetchRpsBest(),
+          ]);
 
-        setPlayers(normalizePlayers(data, activeTab));
+          setZombieRushPlayers(zombieRushResult.data);
+          setRpsPlayers(rpsResult.data);
+          setPlayers([]);
+        } else if (activeTab === "zombierush") {
+          const zombieRushResult = await fetchZombieRushBest();
+          setZombieRushPlayers(zombieRushResult.data);
+          setPlayers(zombieRushResult.data);
+        } else if (activeTab === "rps") {
+          const rpsResult = await fetchRpsBest();
+          setRpsPlayers(rpsResult.data);
+          setPlayers(rpsResult.data);
+        }
       } catch (error) {
         console.error(error);
         setPlayers([]);
@@ -141,6 +169,44 @@ function Leaderboard() {
   function refreshLeaderboard() {
     setRefreshTrigger((prev) => prev + 1);
   }
+
+  async function fetchZombieRushBest() {
+    const fetchStart = performance.now();
+    const data = await getZombieRushLeaderboard("best");
+    const fetchEnd = performance.now();
+    const normalized = normalizeZombieRush(data);
+    const processEnd = performance.now();
+    const timing = buildTiming(fetchStart, fetchEnd, processEnd);
+
+    setTimings((prev) => ({ ...prev, zombierush: timing }));
+
+    return { data: normalized, timing };
+  }
+
+  async function fetchRpsBest() {
+    const fetchStart = performance.now();
+    const data = await getRobloxLeaderboard();
+    const fetchEnd = performance.now();
+    const normalized = normalizeRps(data);
+    const processEnd = performance.now();
+    const timing = buildTiming(fetchStart, fetchEnd, processEnd);
+
+    setTimings((prev) => ({ ...prev, rps: timing }));
+
+    return { data: normalized, timing };
+  }
+
+  const topZombieRush = zombieRushPlayers[0];
+  const topRps = rpsPlayers[0];
+  const currentTop = activeTab === "zombierush" ? topZombieRush : topRps;
+  const totalPlayers =
+    activeTab === "zombierush"
+      ? zombieRushPlayers.length
+      : activeTab === "rps"
+      ? rpsPlayers.length
+      : zombieRushPlayers.length + rpsPlayers.length;
+  const currentTiming = activeTab === "rps" ? timings.rps : timings.zombierush;
+  const totalDiff = Math.abs(timings.zombierush.totalMs - timings.rps.totalMs);
 
   function tabClass(tabName, color = "cyan") {
     const active = activeTab === tabName;
@@ -179,10 +245,14 @@ function Leaderboard() {
           </p>
 
           <h1 className="text-7xl font-black leading-tight">
-            LEADERBOARD
+            {headerTitle[0]}
             <br />
-            ZOMBIERUSH
+            {headerTitle[1]}
           </h1>
+
+          <p className="text-gray-300 text-xl leading-relaxed mt-6 max-w-[720px]">
+            {headerSubtitle}
+          </p>
         </div>
 
         {/* TOP STATS */}
@@ -204,16 +274,20 @@ function Leaderboard() {
                 "polygon(0 0, 92% 0, 100% 15%, 100% 100%, 8% 100%, 0 85%)",
             }}
           >
-            <p className="text-yellow-400 text-lg mb-3">PEMAIN TERATAS</p>
+            <p className="text-yellow-400 text-lg mb-3">
+              {activeTab === "all" ? "TOP ZOMBIERUSH" : "PEMAIN TERATAS"}
+            </p>
 
             <h2 className="text-4xl font-black mb-2 break-words">
-              {players[0]?.username || "No Players Yet"}
+              {activeTab === "all"
+                ? topZombieRush?.username || "Belum ada data"
+                : currentTop?.username || "Belum ada data"}
             </h2>
 
             <p className="text-gray-300">
-              {players[0]?.trophy !== undefined
-                ? `${players[0].trophy} Score`
-                : "0 Score"}
+              {activeTab === "all"
+                ? `${topZombieRush?.score ?? 0} Skor`
+                : `${currentTop?.score ?? 0} Skor`}
             </p>
           </div>
 
@@ -234,38 +308,106 @@ function Leaderboard() {
                 "polygon(0 0, 92% 0, 100% 15%, 100% 100%, 8% 100%, 0 85%)",
             }}
           >
-            <p className="text-green-400 text-lg mb-3">TOTAL PEMAIN</p>
+            <p className="text-green-400 text-lg mb-3">
+              {activeTab === "all" ? "TOP ROCK PAPER SCISSORS" : "TOTAL PEMAIN"}
+            </p>
 
-            <h2 className="text-4xl font-black mb-2">
-              {stats.totalPlayers ?? players.length ?? 0}
+            <h2 className="text-4xl font-black mb-2 break-words">
+              {activeTab === "all"
+                ? topRps?.username || "Belum ada data"
+                : totalPlayers}
             </h2>
 
-            <p className="text-gray-300">Total Data Tersimpan</p>
+            <p className="text-gray-300">
+              {activeTab === "all"
+                ? `${topRps?.score ?? 0} Skor`
+                : "Total Data Tersimpan"}
+            </p>
           </div>
         </div>
 
+        {activeTab !== "all" && (
+          <div className="grid grid-cols-3 gap-6 mb-10">
+            <div
+              className="
+                relative
+                overflow-hidden
+                bg-white/5
+                backdrop-blur-xl
+                border
+                border-cyan-400/20
+                p-6
+                shadow-[0_0_40px_rgba(34,211,238,0.15)]
+              "
+              style={{
+                clipPath:
+                  "polygon(0 0, 92% 0, 100% 15%, 100% 100%, 8% 100%, 0 85%)",
+              }}
+            >
+              <p className="text-cyan-400 text-sm mb-2">WAKTU AMBIL DATA</p>
+              <p className="text-2xl font-black">{formatMs(currentTiming.fetchMs)}</p>
+            </div>
+
+            <div
+              className="
+                relative
+                overflow-hidden
+                bg-white/5
+                backdrop-blur-xl
+                border
+                border-cyan-400/20
+                p-6
+                shadow-[0_0_40px_rgba(34,211,238,0.15)]
+              "
+              style={{
+                clipPath:
+                  "polygon(0 0, 92% 0, 100% 15%, 100% 100%, 8% 100%, 0 85%)",
+              }}
+            >
+              <p className="text-cyan-400 text-sm mb-2">WAKTU OLAH DATA</p>
+              <p className="text-2xl font-black">{formatMs(currentTiming.processMs)}</p>
+            </div>
+
+            <div
+              className="
+                relative
+                overflow-hidden
+                bg-white/5
+                backdrop-blur-xl
+                border
+                border-cyan-400/20
+                p-6
+                shadow-[0_0_40px_rgba(34,211,238,0.15)]
+              "
+              style={{
+                clipPath:
+                  "polygon(0 0, 92% 0, 100% 15%, 100% 100%, 8% 100%, 0 85%)",
+              }}
+            >
+              <p className="text-cyan-400 text-sm mb-2">TOTAL WAKTU PROSES</p>
+              <p className="text-2xl font-black">{formatMs(currentTiming.totalMs)}</p>
+            </div>
+          </div>
+        )}
+
         {/* FILTER BUTTONS */}
         <div className="flex flex-wrap gap-5 mb-10">
-          <button onClick={() => loadLeaderboard("all")} className={tabClass("all")}>
-            RINGKAS
+          <button
+            onClick={() => loadLeaderboard("zombierush")}
+            className={tabClass("zombierush", "green")}
+          >
+            BEST ZOMBIERUSH
           </button>
 
           <button
-            onClick={() => loadLeaderboard("minecraft-best")}
-            className={tabClass("minecraft-best", "green")}
+            onClick={() => loadLeaderboard("rps")}
+            className={tabClass("rps", "cyan")}
           >
-            BEST SCORE
+            BEST ROCK PAPER SCISSORS
           </button>
 
-          <button
-            onClick={() => loadLeaderboard("minecraft-total")}
-            className={tabClass("minecraft-total", "yellow")}
-          >
-            TOTAL SCORE
-          </button>
-
-          <button onClick={() => loadLeaderboard("roblox")} className={tabClass("roblox")}>
-            ROCK PAPER SCISSORS
+          <button onClick={() => loadLeaderboard("all")} className={tabClass("all", "yellow")}>
+            ALL GAME
           </button>
 
           <button
@@ -285,110 +427,200 @@ function Leaderboard() {
           </button>
         </div>
 
-        {/* LEADERBOARD TABLE */}
-        <div
-          className="
-            bg-white/5
-            backdrop-blur-xl
-            border
-            border-cyan-400/20
-            overflow-hidden
-            shadow-[0_0_50px_rgba(34,211,238,0.15)]
-          "
-          style={{
-            clipPath:
-              "polygon(0 0, 98% 0, 100% 5%, 100% 100%, 2% 100%, 0 95%)",
-          }}
-        >
-          {/* HEADER */}
-          <div
-            className="
-              grid
-              grid-cols-4
-              bg-cyan-400/10
-              border-b
-              border-cyan-400/20
-              p-5
-              text-cyan-400
-              font-bold
-            "
-          >
-            <div>RANK</div>
-            <div>PLAYER</div>
-            <div>GAME</div>
-            <div>SCORE</div>
-          </div>
-
-          {loading && (
-            <div className="p-8 text-center text-cyan-300 font-semibold">
-              Memuat data leaderboard...
-            </div>
-          )}
-
-          {!loading && errorMessage && (
-            <div className="p-8 text-center text-red-300 font-semibold">
-              {errorMessage}
-            </div>
-          )}
-
-          {!loading && !errorMessage && players.length === 0 && (
-            <div className="p-8 text-center text-gray-300 font-semibold">
-              Belum ada data leaderboard.
-            </div>
-          )}
-
-          {!loading &&
-            !errorMessage &&
-            players.map((player) => (
-              <div
-                key={`${player.game}-${player.rank}-${player.uuid || player.username}`}
+        {activeTab === "all" ? (
+          <>
+            <div
+              className="
+                relative
+                overflow-hidden
+                bg-white/5
+                backdrop-blur-xl
+                border
+                border-cyan-400/20
+                p-8
+                shadow-[0_0_50px_rgba(34,211,238,0.15)]
+                mb-10
+              "
+              style={{
+                clipPath:
+                  "polygon(0 0, 98% 0, 100% 5%, 100% 100%, 2% 100%, 0 95%)",
+              }}
+            >
+              <p className="text-cyan-400 text-lg font-bold mb-4">PERBANDINGAN WAKTU PROSES</p>
+              <div className="grid grid-cols-2 gap-8">
+                <div>
+                  <p className="text-green-300 font-semibold mb-3">ZombieRush</p>
+                  <div className="space-y-2 text-gray-200">
+                    <div>Fetch: {formatMs(timings.zombierush.fetchMs)}</div>
+                    <div>Process: {formatMs(timings.zombierush.processMs)}</div>
+                    <div>Total: {formatMs(timings.zombierush.totalMs)}</div>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-cyan-300 font-semibold mb-3">Rock Paper Scissors</p>
+                  <div className="space-y-2 text-gray-200">
+                    <div>Fetch: {formatMs(timings.rps.fetchMs)}</div>
+                    <div>Process: {formatMs(timings.rps.processMs)}</div>
+                    <div>Total: {formatMs(timings.rps.totalMs)}</div>
+                  </div>
+                </div>
+              </div>
+              <p className="mt-6 text-yellow-300 font-semibold">
+                Selisih total waktu: {formatMs(totalDiff)}
+              </p>
+              <button
+                onClick={refreshLeaderboard}
                 className="
-                  grid
-                  grid-cols-4
-                  p-5
-                  border-b
-                  border-white/5
-                  hover:bg-cyan-400/5
+                  mt-6
+                  px-6
+                  py-3
+                  rounded-xl
+                  font-bold
                   transition
+                  border
+                  border-white/20
+                  hover:bg-white/10
                 "
               >
-                {/* RANK */}
-                <div className="font-bold text-cyan-400">#{player.rank}</div>
+                REFRESH DATA
+              </button>
+            </div>
 
-                {/* PLAYER */}
-                <div className="font-semibold break-words" title={player.uuid}>
-                  {player.username}
-                </div>
-
-                {/* GAME */}
-                <div>
-                  <span
-                    className={`
-                      px-4
-                      py-1
-                      rounded-full
-                      text-sm
-                      font-semibold
-                      ${
-                        player.game === "ZombieRush"
-                          ? "bg-green-500/20 text-green-300"
-                          : player.game === "Rock Paper Scissors"
-                          ? "bg-cyan-500/20 text-cyan-300"
-                          : "bg-yellow-500/20 text-yellow-300"
-                      }
-                    `}
-                  >
-                    {player.game}
-                  </span>
-                </div>
-
-                {/* SCORE */}
-                <div className="font-bold">{player.trophy}</div>
-              </div>
-            ))}
-        </div>
+            <div className="grid grid-cols-2 gap-8">
+              {renderTable(
+                "BEST ZOMBIERUSH",
+                "Peringkat berdasarkan skor tertinggi pemain ZombieRush.",
+                zombieRushPlayers,
+                loading,
+                errorMessage
+              )}
+              {renderTable(
+                "BEST ROCK PAPER SCISSORS",
+                "Peringkat berdasarkan skor terbaik pemain Rock Paper Scissors.",
+                rpsPlayers,
+                loading,
+                errorMessage
+              )}
+            </div>
+          </>
+        ) : (
+          renderTable(
+            activeTab === "zombierush" ? "BEST ZOMBIERUSH" : "BEST ROCK PAPER SCISSORS",
+            activeTab === "zombierush"
+              ? "Peringkat berdasarkan skor tertinggi pemain ZombieRush."
+              : "Peringkat berdasarkan skor terbaik pemain Rock Paper Scissors.",
+            players,
+            loading,
+            errorMessage
+          )
+        )}
       </div>
     </MainLayout>
+  );
+}
+
+function renderTable(title, subtitle, data, loading, errorMessage) {
+  return (
+    <div>
+      <div className="mb-4">
+        <p className="text-cyan-400 tracking-[6px] mb-2">{title}</p>
+        <p className="text-gray-300">{subtitle}</p>
+      </div>
+
+      <div
+        className="
+          bg-white/5
+          backdrop-blur-xl
+          border
+          border-cyan-400/20
+          overflow-hidden
+          shadow-[0_0_50px_rgba(34,211,238,0.15)]
+        "
+        style={{
+          clipPath: "polygon(0 0, 98% 0, 100% 5%, 100% 100%, 2% 100%, 0 95%)",
+        }}
+      >
+        <div
+          className="
+            grid
+            grid-cols-4
+            bg-cyan-400/10
+            border-b
+            border-cyan-400/20
+            p-5
+            text-cyan-400
+            font-bold
+          "
+        >
+          <div>RANK</div>
+          <div>PLAYER</div>
+          <div>GAME</div>
+          <div>SCORE</div>
+        </div>
+
+        {loading && (
+          <div className="p-8 text-center text-cyan-300 font-semibold">
+            Memuat data leaderboard...
+          </div>
+        )}
+
+        {!loading && errorMessage && (
+          <div className="p-8 text-center text-red-300 font-semibold">{errorMessage}</div>
+        )}
+
+        {!loading && !errorMessage && data.length === 0 && (
+          <div className="p-8 text-center text-gray-300 font-semibold">
+            Belum ada data leaderboard.
+          </div>
+        )}
+
+        {!loading &&
+          !errorMessage &&
+          data.map((player) => (
+            <div
+              key={`${player.game}-${player.rank}-${player.uuid || player.username}`}
+              className="
+                grid
+                grid-cols-4
+                p-5
+                border-b
+                border-white/5
+                hover:bg-cyan-400/5
+                transition
+              "
+            >
+              <div className="font-bold text-cyan-400">#{player.rank}</div>
+
+              <div className="font-semibold break-words" title={player.uuid}>
+                {player.username}
+              </div>
+
+              <div>
+                <span
+                  className={`
+                    px-4
+                    py-1
+                    rounded-full
+                    text-sm
+                    font-semibold
+                    ${
+                      player.game === "ZombieRush"
+                        ? "bg-green-500/20 text-green-300"
+                        : player.game === "Rock Paper Scissors"
+                        ? "bg-cyan-500/20 text-cyan-300"
+                        : "bg-yellow-500/20 text-yellow-300"
+                    }
+                  `}
+                >
+                  {player.game}
+                </span>
+              </div>
+
+              <div className="font-bold">{player.score}</div>
+            </div>
+          ))}
+      </div>
+    </div>
   );
 }
 
