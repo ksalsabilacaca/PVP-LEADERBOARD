@@ -1,6 +1,7 @@
 # PVP Leaderboard - Mini Project SBD Kelompok 3
 
 Platform leaderboard multi-game yang mengintegrasikan backend API, dua frontend web, serta plugin Minecraft ZombieRush. Data ZombieRush disimpan di Redis melalui plugin dan dibaca oleh backend, sedangkan skor Rock Paper Scissors disimpan di MongoDB dan disajikan melalui API. Seluruh frontend mengonsumsi API dan SSE untuk pembaruan real-time.  
+
 Access our Website : https://minpro-sbd3.live/
 
 ## Project Overview
