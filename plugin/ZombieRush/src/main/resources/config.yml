@@ -25,6 +25,26 @@ world:
   arena-radius: 25
   wall-height: 5
 
+hub:
+  world: "Hub"
+  teleport-on-join: true
+  lock-time: true
+  lock-weather: true
+  time: 6000
+  protection:
+    block-break: true
+    block-place: true
+    pvp: true
+    damage: true
+    hunger: true
+  join-title:
+    enabled: true
+    title: "&bSelamat Datang di ZombieRush!"
+    subtitle: "&eServer Mini Project SBD Kelompok 3"
+    fade-in: 20
+    stay: 100
+    fade-out: 20
+
 redis:
   enabled: true
   host: "127.0.0.1"

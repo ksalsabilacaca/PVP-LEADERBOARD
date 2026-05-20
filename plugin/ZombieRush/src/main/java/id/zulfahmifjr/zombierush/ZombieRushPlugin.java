@@ -3,6 +3,9 @@ package id.zulfahmifjr.zombierush;
 import id.zulfahmifjr.zombierush.arena.ArenaManager;
 import id.zulfahmifjr.zombierush.command.ZombieRushCommand;
 import id.zulfahmifjr.zombierush.game.MatchManager;
+import id.zulfahmifjr.zombierush.hub.HubManager;
+import id.zulfahmifjr.zombierush.hub.HubProtectionListener;
+import id.zulfahmifjr.zombierush.hub.PlayerJoinListener;
 import id.zulfahmifjr.zombierush.leaderboard.LeaderboardHologramManager;
 import id.zulfahmifjr.zombierush.leaderboard.LeaderboardService;
 import id.zulfahmifjr.zombierush.leaderboard.RedisLeaderboardService;
@@ -33,6 +36,7 @@ public class ZombieRushPlugin extends JavaPlugin {
     private JoinNpcManager joinNpcManager;
     private LeaderboardHologramManager leaderboardHologramManager;
     private PlacementManager placementManager;
+    private HubManager hubManager;
 
     @Override
     public void onEnable() {
@@ -55,9 +59,13 @@ public class ZombieRushPlugin extends JavaPlugin {
         joinNpcManager = new JoinNpcManager(this);
         leaderboardHologramManager = new LeaderboardHologramManager(this);
         placementManager = new PlacementManager();
+        hubManager = new HubManager(this);
 
         getServer().getPluginManager().registerEvents(new PlacementListener(this, placementManager), this);
         getServer().getPluginManager().registerEvents(new GameListener(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerJoinListener(hubManager), this);
+        getServer().getPluginManager().registerEvents(new HubProtectionListener(this, hubManager, placementManager),
+                this);
 
         ZombieRushCommand commandHandler = new ZombieRushCommand(this, placementManager);
         PluginCommand command = getCommand("zombierush");
@@ -73,6 +81,7 @@ public class ZombieRushPlugin extends JavaPlugin {
                 boolean build = getConfig().getBoolean("settings.auto-build-arenas-on-enable", true);
                 arenaManager.setupWorldAndArenas(build);
             }
+            hubManager.setupHubWorld();
             joinNpcManager.spawnFromConfig();
             leaderboardHologramManager.spawnFromConfig();
         }, 40L);
@@ -110,20 +119,56 @@ public class ZombieRushPlugin extends JavaPlugin {
     }
 
     public Location getLobbyLocation() {
-        if (!getConfig().getBoolean("lobby.enabled", false)) return null;
+        if (!getConfig().getBoolean("lobby.enabled", false))
+            return null;
         return LocationUtil.load(getConfig(), "lobby", true);
     }
 
-    public NamespacedKey getJoinNpcKey() { return joinNpcKey; }
-    public NamespacedKey getJoinNpcHologramKey() { return joinNpcHologramKey; }
-    public NamespacedKey getLeaderboardDisplayKey() { return leaderboardDisplayKey; }
-    public NamespacedKey getArenaZombieKey() { return arenaZombieKey; }
-    public NamespacedKey getMatchPlayerKey() { return matchPlayerKey; }
+    public NamespacedKey getJoinNpcKey() {
+        return joinNpcKey;
+    }
 
-    public ArenaManager getArenaManager() { return arenaManager; }
-    public MatchManager getMatchManager() { return matchManager; }
-    public JoinNpcManager getJoinNpcManager() { return joinNpcManager; }
-    public LeaderboardHologramManager getLeaderboardHologramManager() { return leaderboardHologramManager; }
-    public LeaderboardService getLeaderboardService() { return leaderboardService; }
-    public RedisLeaderboardService getLeaderboardRedisService() { return leaderboardService; }
+    public NamespacedKey getJoinNpcHologramKey() {
+        return joinNpcHologramKey;
+    }
+
+    public NamespacedKey getLeaderboardDisplayKey() {
+        return leaderboardDisplayKey;
+    }
+
+    public NamespacedKey getArenaZombieKey() {
+        return arenaZombieKey;
+    }
+
+    public NamespacedKey getMatchPlayerKey() {
+        return matchPlayerKey;
+    }
+
+    public ArenaManager getArenaManager() {
+        return arenaManager;
+    }
+
+    public MatchManager getMatchManager() {
+        return matchManager;
+    }
+
+    public JoinNpcManager getJoinNpcManager() {
+        return joinNpcManager;
+    }
+
+    public LeaderboardHologramManager getLeaderboardHologramManager() {
+        return leaderboardHologramManager;
+    }
+
+    public LeaderboardService getLeaderboardService() {
+        return leaderboardService;
+    }
+
+    public RedisLeaderboardService getLeaderboardRedisService() {
+        return leaderboardService;
+    }
+
+    public HubManager getHubManager() {
+        return hubManager;
+    }
 }

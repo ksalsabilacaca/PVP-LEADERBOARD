@@ -46,53 +46,65 @@ public class ZombieRushCommand implements CommandExecutor, TabCompleter {
             }
             case "status" -> {
                 Msg.info(sender, plugin.getConfig(), "Status Redis: &f" + plugin.getLeaderboardService().statusText());
-                Msg.info(sender, plugin.getConfig(), "Arena aktif: &f" + plugin.getMatchManager().activeMatches().size());
+                Msg.info(sender, plugin.getConfig(),
+                        "Arena aktif: &f" + plugin.getMatchManager().activeMatches().size());
                 return true;
             }
             case "setupworld" -> {
-                if (!checkAdmin(sender)) return true;
+                if (!checkAdmin(sender))
+                    return true;
                 boolean rebuild = args.length > 1 && args[1].equalsIgnoreCase("rebuild");
-                Msg.info(sender, plugin.getConfig(), rebuild ? "Membangun ulang world dan seluruh arena..." : "Membuat atau memuat world arena...");
+                Msg.info(sender, plugin.getConfig(),
+                        rebuild ? "Membangun ulang world dan seluruh arena..." : "Membuat atau memuat world arena...");
                 plugin.getArenaManager().setupWorldAndArenas(rebuild);
-                Msg.success(sender, plugin.getConfig(), "World arena siap digunakan. Total arena: " + plugin.getArenaManager().arenas().size() + ".");
+                Msg.success(sender, plugin.getConfig(),
+                        "World arena siap digunakan. Total arena: " + plugin.getArenaManager().arenas().size() + ".");
                 return true;
             }
             case "arena" -> {
-                if (!checkAdmin(sender)) return true;
+                if (!checkAdmin(sender))
+                    return true;
                 handleArena(sender, args);
                 return true;
             }
             case "npc" -> {
-                if (!checkAdmin(sender)) return true;
+                if (!checkAdmin(sender))
+                    return true;
                 handleNpc(sender, args);
                 return true;
             }
             case "leaderboard", "lead" -> {
-                if (!checkAdmin(sender)) return true;
+                if (!checkAdmin(sender))
+                    return true;
                 handleLeaderboard(sender, args);
                 return true;
             }
             case "lobby" -> {
-                if (!checkAdmin(sender)) return true;
+                if (!checkAdmin(sender))
+                    return true;
                 handleLobby(sender, args);
                 return true;
             }
             case "reload" -> {
-                if (!checkAdmin(sender)) return true;
+                if (!checkAdmin(sender))
+                    return true;
                 plugin.reloadConfig();
                 plugin.getLeaderboardRedisService().connect();
                 plugin.getJoinNpcManager().spawnFromConfig();
                 plugin.getLeaderboardHologramManager().spawnFromConfig();
+                plugin.getHubManager().setupHubWorld();
                 Msg.success(sender, plugin.getConfig(), "Konfigurasi ZombieRush berhasil dimuat ulang.");
                 return true;
             }
             case "redis" -> {
-                if (!checkAdmin(sender)) return true;
+                if (!checkAdmin(sender))
+                    return true;
                 Msg.info(sender, plugin.getConfig(), "Status Redis: &f" + plugin.getLeaderboardService().statusText());
                 return true;
             }
             case "reset" -> {
-                if (!checkAdmin(sender)) return true;
+                if (!checkAdmin(sender))
+                    return true;
                 if (args.length < 2) {
                     Msg.error(sender, plugin.getConfig(), "Format salah. Gunakan: /zr reset <player>");
                     return true;
@@ -104,11 +116,13 @@ public class ZombieRushCommand implements CommandExecutor, TabCompleter {
                 }
                 plugin.getLeaderboardService().reset(target.getUniqueId());
                 plugin.getLeaderboardHologramManager().updateNow();
-                Msg.success(sender, plugin.getConfig(), "Data leaderboard milik " + target.getName() + " berhasil direset.");
+                Msg.success(sender, plugin.getConfig(),
+                        "Data leaderboard milik " + target.getName() + " berhasil direset.");
                 return true;
             }
             default -> {
-                Msg.error(sender, plugin.getConfig(), "Sub-command tidak dikenal. Gunakan /zr help untuk melihat bantuan.");
+                Msg.error(sender, plugin.getConfig(),
+                        "Sub-command tidak dikenal. Gunakan /zr help untuk melihat bantuan.");
                 return true;
             }
         }
@@ -122,9 +136,11 @@ public class ZombieRushCommand implements CommandExecutor, TabCompleter {
             Msg.info(sender, plugin.getConfig(), "&f/zr setupworld &7- Membuat world dan 5 arena otomatis.");
             Msg.info(sender, plugin.getConfig(), "&f/zr setupworld rebuild &7- Membangun ulang seluruh arena.");
             Msg.info(sender, plugin.getConfig(), "&f/zr npc set/remove/info &7- Mengatur Zombie NPC Join Game.");
-            Msg.info(sender, plugin.getConfig(), "&f/zr leaderboard set/remove/info &7- Mengatur floating leaderboard.");
+            Msg.info(sender, plugin.getConfig(),
+                    "&f/zr leaderboard set/remove/info &7- Mengatur floating leaderboard.");
             Msg.info(sender, plugin.getConfig(), "&f/zr lobby set/info &7- Mengatur lokasi lobby selesai match.");
-            Msg.info(sender, plugin.getConfig(), "&f/zr arena info/rebuild <id> &7- Melihat atau membangun ulang arena.");
+            Msg.info(sender, plugin.getConfig(),
+                    "&f/zr arena info/rebuild <id> &7- Melihat atau membangun ulang arena.");
             Msg.info(sender, plugin.getConfig(), "&f/zr reload &7- Memuat ulang konfigurasi.");
         }
         sender.sendMessage(" ");
@@ -140,7 +156,8 @@ public class ZombieRushCommand implements CommandExecutor, TabCompleter {
 
     private void handleNpc(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            Msg.error(sender, plugin.getConfig(), "Format salah. Gunakan: /zr npc set, /zr npc remove, atau /zr npc info.");
+            Msg.error(sender, plugin.getConfig(),
+                    "Format salah. Gunakan: /zr npc set, /zr npc remove, atau /zr npc info.");
             return;
         }
         String action = args[1].toLowerCase(Locale.ROOT);
@@ -151,7 +168,8 @@ public class ZombieRushCommand implements CommandExecutor, TabCompleter {
                     return;
                 }
                 placementManager.set(player.getUniqueId(), PlacementMode.NPC);
-                Msg.info(player, plugin.getConfig(), "Mode pengaturan NPC aktif. Silakan klik atau hancurkan blok tempat NPC akan berdiri.");
+                Msg.info(player, plugin.getConfig(),
+                        "Mode pengaturan NPC aktif. Silakan klik atau hancurkan blok tempat NPC akan berdiri.");
             }
             case "remove" -> {
                 plugin.getConfig().set("npc.enabled", false);
@@ -159,12 +177,15 @@ public class ZombieRushCommand implements CommandExecutor, TabCompleter {
                 plugin.getJoinNpcManager().remove();
                 Msg.success(sender, plugin.getConfig(), "NPC Join Game berhasil dihapus.");
             }
-            case "info" -> Msg.info(sender, plugin.getConfig(), "Lokasi NPC: &f" + LocationUtil.shortString(plugin.getNpcLocation()));
+            case "info" -> Msg.info(sender, plugin.getConfig(),
+                    "Lokasi NPC: &f" + LocationUtil.shortString(plugin.getNpcLocation()));
             case "cancel" -> {
-                if (sender instanceof Player player) placementManager.remove(player.getUniqueId());
+                if (sender instanceof Player player)
+                    placementManager.remove(player.getUniqueId());
                 Msg.success(sender, plugin.getConfig(), "Mode pengaturan NPC dibatalkan.");
             }
-            default -> Msg.error(sender, plugin.getConfig(), "Aksi NPC tidak dikenal. Gunakan set, remove, info, atau cancel.");
+            default -> Msg.error(sender, plugin.getConfig(),
+                    "Aksi NPC tidak dikenal. Gunakan set, remove, info, atau cancel.");
         }
     }
 
@@ -181,7 +202,8 @@ public class ZombieRushCommand implements CommandExecutor, TabCompleter {
                     return;
                 }
                 placementManager.set(player.getUniqueId(), PlacementMode.LEADERBOARD);
-                Msg.info(player, plugin.getConfig(), "Mode pengaturan leaderboard aktif. Silakan klik atau hancurkan blok dasar floating leaderboard.");
+                Msg.info(player, plugin.getConfig(),
+                        "Mode pengaturan leaderboard aktif. Silakan klik atau hancurkan blok dasar floating leaderboard.");
             }
             case "remove" -> {
                 plugin.getConfig().set("leaderboard.enabled", false);
@@ -189,12 +211,15 @@ public class ZombieRushCommand implements CommandExecutor, TabCompleter {
                 plugin.getLeaderboardHologramManager().remove();
                 Msg.success(sender, plugin.getConfig(), "Floating leaderboard berhasil dihapus.");
             }
-            case "info" -> Msg.info(sender, plugin.getConfig(), "Lokasi leaderboard: &f" + LocationUtil.shortString(plugin.getLeaderboardLocation()));
+            case "info" -> Msg.info(sender, plugin.getConfig(),
+                    "Lokasi leaderboard: &f" + LocationUtil.shortString(plugin.getLeaderboardLocation()));
             case "cancel" -> {
-                if (sender instanceof Player player) placementManager.remove(player.getUniqueId());
+                if (sender instanceof Player player)
+                    placementManager.remove(player.getUniqueId());
                 Msg.success(sender, plugin.getConfig(), "Mode pengaturan leaderboard dibatalkan.");
             }
-            default -> Msg.error(sender, plugin.getConfig(), "Aksi leaderboard tidak dikenal. Gunakan set, remove, info, atau cancel.");
+            default -> Msg.error(sender, plugin.getConfig(),
+                    "Aksi leaderboard tidak dikenal. Gunakan set, remove, info, atau cancel.");
         }
     }
 
@@ -215,7 +240,8 @@ public class ZombieRushCommand implements CommandExecutor, TabCompleter {
                 plugin.saveConfig();
                 Msg.success(player, plugin.getConfig(), "Lokasi lobby berhasil disimpan di posisi Anda saat ini.");
             }
-            case "info" -> Msg.info(sender, plugin.getConfig(), "Lokasi lobby: &f" + LocationUtil.shortString(plugin.getLobbyLocation()));
+            case "info" -> Msg.info(sender, plugin.getConfig(),
+                    "Lokasi lobby: &f" + LocationUtil.shortString(plugin.getLobbyLocation()));
             default -> Msg.error(sender, plugin.getConfig(), "Aksi lobby tidak dikenal. Gunakan set atau info.");
         }
     }
@@ -227,7 +253,8 @@ public class ZombieRushCommand implements CommandExecutor, TabCompleter {
                 return;
             }
             for (Arena arena : plugin.getArenaManager().arenas()) {
-                Msg.info(sender, plugin.getConfig(), "Arena " + arena.id() + ": &f" + arena.status().name() + " &7| Center: &f" + LocationUtil.shortString(arena.center()));
+                Msg.info(sender, plugin.getConfig(), "Arena " + arena.id() + ": &f" + arena.status().name()
+                        + " &7| Center: &f" + LocationUtil.shortString(arena.center()));
             }
             return;
         }
@@ -260,7 +287,8 @@ public class ZombieRushCommand implements CommandExecutor, TabCompleter {
         if (args.length == 1) {
             values.addAll(List.of("help", "start", "status"));
             if (sender.hasPermission("zombierush.admin")) {
-                values.addAll(List.of("setupworld", "arena", "npc", "leaderboard", "lobby", "redis", "reload", "reset"));
+                values.addAll(
+                        List.of("setupworld", "arena", "npc", "leaderboard", "lobby", "redis", "reload", "reset"));
             }
             return filter(values, args[0]);
         }
@@ -276,7 +304,8 @@ public class ZombieRushCommand implements CommandExecutor, TabCompleter {
         }
         if (args.length == 3 && args[0].equalsIgnoreCase("arena") && args[1].equalsIgnoreCase("rebuild")) {
             values.add("all");
-            for (int i = 1; i <= plugin.getConfig().getInt("world.arena-count", 5); i++) values.add(String.valueOf(i));
+            for (int i = 1; i <= plugin.getConfig().getInt("world.arena-count", 5); i++)
+                values.add(String.valueOf(i));
             return filter(values, args[2]);
         }
         return values;
