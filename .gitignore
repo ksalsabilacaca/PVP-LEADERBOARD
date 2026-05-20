@@ -11,4 +11,19 @@ target/
 node_modules/
 dist/
 .env
-.env.production
+
+# Environment files - local/server only
+.env
+.env.*
+frontend/.env
+frontend/.env.*
+othergame-frontend/.env
+othergame-frontend/.env.*
+backend/.env
+backend/.env.*
+
+# Keep examples tracked
+!.env.example
+!frontend/.env.example
+!othergame-frontend/.env.example
+!backend/.env.example
