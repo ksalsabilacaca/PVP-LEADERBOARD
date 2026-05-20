@@ -24,7 +24,7 @@ public class JoinNpcManager {
     private ArmorStand hologramLine2;
     private ArmorStand hologramLine3;
     private BukkitTask faceTask;
-    private static final double NPC_SCALE = 2.0;
+    private static final double NPC_SCALE = 1.5;
     private static final double FACE_RADIUS = 16.0;
 
     public JoinNpcManager(ZombieRushPlugin plugin) {
@@ -71,10 +71,12 @@ public class JoinNpcManager {
     }
 
     private void spawnHologram(Location base) {
-        hologramLine1 = spawnLine(base.clone().add(0, 2.85, 0),
+        hologramLine1 = spawnLine(base.clone().add(0, 3.65, 0),
                 ChatColor.GREEN + "" + ChatColor.BOLD + "CLICK TO PLAY");
-        hologramLine2 = spawnLine(base.clone().add(0, 2.55, 0), ChatColor.RED + "" + ChatColor.BOLD + "ZOMBIE RUSH");
-        hologramLine3 = spawnLine(base.clone().add(0, 2.25, 0), ChatColor.GRAY + "Pukul atau klik zombie untuk mulai");
+        hologramLine2 = spawnLine(base.clone().add(0, 3.35, 0),
+                ChatColor.RED + "" + ChatColor.BOLD + "ZOMBIE RUSH");
+        hologramLine3 = spawnLine(base.clone().add(0, 3.05, 0),
+                ChatColor.GRAY + "Pukul atau klik zombie untuk mulai");
     }
 
     private ArmorStand spawnLine(Location loc, String text) {
