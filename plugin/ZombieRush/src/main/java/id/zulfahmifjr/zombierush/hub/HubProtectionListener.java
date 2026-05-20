@@ -6,13 +6,18 @@ import id.zulfahmifjr.zombierush.util.Msg;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +37,27 @@ public class HubProtectionListener implements Listener {
         this.placementManager = placementManager;
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onBlockDamage(BlockDamageEvent event) {
+        if (!hubManager.isProtectionEnabled("block-break", true))
+            return;
+        Player player = event.getPlayer();
+        if (!hubManager.isHubWorld(player.getWorld()))
+            return;
+        if (placementManager != null && placementManager.has(player.getUniqueId()))
+            return;
+
+        if (player.getGameMode() == GameMode.CREATIVE || player.hasPermission("zombierush.admin")) {
+            event.setCancelled(false);
+            sendBreakInfo(player);
+            return;
+        }
+
+        event.setCancelled(true);
+        sendBreakWarn(player);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onBreak(BlockBreakEvent event) {
         if (!hubManager.isProtectionEnabled("block-break", true))
             return;
@@ -43,20 +68,44 @@ public class HubProtectionListener implements Listener {
             return;
 
         if (player.getGameMode() == GameMode.CREATIVE || player.hasPermission("zombierush.admin")) {
-            if (shouldSend(breakMessageCooldown, player.getUniqueId())) {
-                Msg.info(player, plugin.getConfig(),
-                        "Mode kreatif terdeteksi. Anda dapat menghancurkan blok di lobby sebagai admin.");
-            }
+            event.setCancelled(false);
+            sendBreakInfo(player);
             return;
         }
 
         event.setCancelled(true);
-        if (shouldSend(breakMessageCooldown, player.getUniqueId())) {
-            Msg.warn(player, plugin.getConfig(), "Anda tidak dapat menghancurkan blok di area lobby.");
-        }
+        sendBreakWarn(player);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onInteract(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK)
+            return;
+        if (event.getClickedBlock() == null)
+            return;
+        ItemStack item = event.getItem();
+        if (item == null || !item.getType().isBlock())
+            return;
+        if (!hubManager.isProtectionEnabled("block-place", true))
+            return;
+
+        Player player = event.getPlayer();
+        if (!hubManager.isHubWorld(player.getWorld()))
+            return;
+        if (placementManager != null && placementManager.has(player.getUniqueId()))
+            return;
+
+        if (player.getGameMode() == GameMode.CREATIVE || player.hasPermission("zombierush.admin")) {
+            event.setCancelled(false);
+            sendPlaceInfo(player);
+            return;
+        }
+
+        event.setCancelled(true);
+        sendPlaceWarn(player);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlace(BlockPlaceEvent event) {
         if (!hubManager.isProtectionEnabled("block-place", true))
             return;
@@ -67,17 +116,13 @@ public class HubProtectionListener implements Listener {
             return;
 
         if (player.getGameMode() == GameMode.CREATIVE || player.hasPermission("zombierush.admin")) {
-            if (shouldSend(placeMessageCooldown, player.getUniqueId())) {
-                Msg.info(player, plugin.getConfig(),
-                        "Mode kreatif terdeteksi. Anda dapat menempatkan blok di lobby sebagai admin.");
-            }
+            event.setCancelled(false);
+            sendPlaceInfo(player);
             return;
         }
 
         event.setCancelled(true);
-        if (shouldSend(placeMessageCooldown, player.getUniqueId())) {
-            Msg.warn(player, plugin.getConfig(), "Anda tidak dapat menempatkan blok di area lobby.");
-        }
+        sendPlaceWarn(player);
     }
 
     @EventHandler
@@ -141,5 +186,31 @@ public class HubProtectionListener implements Listener {
         }
         cooldowns.put(uuid, now);
         return true;
+    }
+
+    private void sendBreakInfo(Player player) {
+        if (shouldSend(breakMessageCooldown, player.getUniqueId())) {
+            Msg.info(player, plugin.getConfig(),
+                    "Mode kreatif atau admin terdeteksi. Anda dapat menghancurkan blok di lobby sebagai admin.");
+        }
+    }
+
+    private void sendBreakWarn(Player player) {
+        if (shouldSend(breakMessageCooldown, player.getUniqueId())) {
+            Msg.warn(player, plugin.getConfig(), "Anda tidak dapat menghancurkan blok di area lobby.");
+        }
+    }
+
+    private void sendPlaceInfo(Player player) {
+        if (shouldSend(placeMessageCooldown, player.getUniqueId())) {
+            Msg.info(player, plugin.getConfig(),
+                    "Mode kreatif atau admin terdeteksi. Anda dapat menempatkan blok di lobby sebagai admin.");
+        }
+    }
+
+    private void sendPlaceWarn(Player player) {
+        if (shouldSend(placeMessageCooldown, player.getUniqueId())) {
+            Msg.warn(player, plugin.getConfig(), "Anda tidak dapat menempatkan blok di area lobby.");
+        }
     }
 }

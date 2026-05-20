@@ -25,6 +25,7 @@ public class PlacementListener implements Listener {
     public void onInteract(PlayerInteractEvent event) {
         if (event.getAction() != Action.LEFT_CLICK_BLOCK && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         if (event.getClickedBlock() == null) return;
+        if (!placementManager.has(event.getPlayer().getUniqueId())) return;
         event.setCancelled(true);
         handlePlacement(event.getPlayer(), event.getClickedBlock());
     }
