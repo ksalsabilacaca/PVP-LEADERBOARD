@@ -234,11 +234,17 @@ function Leaderboard() {
       ? rpsPlayers.length
       : zombieRushPlayers.length + rpsPlayers.length;
   const currentTiming = activeTab === "rps" ? timings.rps : timings.zombierush;
-  const zombierushTotalMs = timings.zombierush.totalMs;
-  const rpsTotalMs = timings.rps.totalMs;
+  const zombierushFrontendTotal = Number(timings.zombierush.totalMs);
+  const rpsFrontendTotal = Number(timings.rps.totalMs);
+  const zombierushBackendTotal = Number(backendMetrics.zombierush?.totalMs);
+  const rpsBackendTotal = Number(backendMetrics.rps?.totalMs);
+  const zombierushTotalMs = zombierushFrontendTotal + zombierushBackendTotal;
+  const rpsTotalMs = rpsFrontendTotal + rpsBackendTotal;
   const hasTotalTimes =
-    Number.isFinite(zombierushTotalMs) &&
-    Number.isFinite(rpsTotalMs) &&
+    Number.isFinite(zombierushFrontendTotal) &&
+    Number.isFinite(rpsFrontendTotal) &&
+    Number.isFinite(zombierushBackendTotal) &&
+    Number.isFinite(rpsBackendTotal) &&
     (zombierushTotalMs > 0 || rpsTotalMs > 0);
   const totalDiff = Math.abs(zombierushTotalMs - rpsTotalMs);
   const totalDiffText = hasTotalTimes ? formatMs(totalDiff) : "-";
