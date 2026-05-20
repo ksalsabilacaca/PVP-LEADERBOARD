@@ -47,6 +47,20 @@ public class GameListener implements Listener {
     }
 
     @EventHandler
+    public void onZombieHit(EntityDamageByEntityEvent event) {
+        if (event.isCancelled())
+            return;
+        if (!(event.getDamager() instanceof Player player))
+            return;
+        if (!(event.getEntity() instanceof Zombie zombie))
+            return;
+        if (!plugin.isArenaZombie(zombie))
+            return;
+
+        plugin.getMatchManager().handleZombieHit(player, zombie);
+    }
+
+    @EventHandler
     public void onNpcTarget(EntityTargetEvent event) {
         if (plugin.getJoinNpcManager().isJoinNpc(event.getEntity())) {
             event.setCancelled(true);

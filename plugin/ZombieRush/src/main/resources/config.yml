@@ -6,7 +6,9 @@ settings:
   prefix: "&8[&cZombieRush&8] &r"
   match-duration-seconds: 60
   countdown-seconds: 5
-  score-per-zombie: 10
+  score-per-hit: 1
+  score-per-kill: 10
+  score-per-kill-baby: 15
   zombie-health: 6.0
   survival-bonus: 100
   max-active-zombies: 6

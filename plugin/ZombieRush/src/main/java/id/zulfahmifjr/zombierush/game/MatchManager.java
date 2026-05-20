@@ -232,13 +232,35 @@ public class MatchManager {
         if (arenaId == null || !arenaId.equals(String.valueOf(match.arena().id())))
             return;
 
-        int scorePerZombie = plugin.getConfig().getInt("settings.score-per-zombie", 10);
         match.addKill();
-        match.addScore(scorePerZombie);
+        int scorePerKill = plugin.getConfig().getInt("settings.score-per-kill", 10);
+        int scorePerKillBaby = plugin.getConfig().getInt("settings.score-per-kill-baby", 15);
+        int killScore = zombie.isBaby() ? scorePerKillBaby : scorePerKill;
+        match.addScore(killScore);
         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.6f, 1.8f);
         player.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR,
-                new net.md_5.bungee.api.chat.TextComponent(ChatColor.GREEN + "+" + scorePerZombie + " skor"
+                new net.md_5.bungee.api.chat.TextComponent(ChatColor.GREEN + "+" + killScore + " skor"
                         + ChatColor.GRAY + " | Kill: " + match.kills() + " | Total: " + match.score()));
+    }
+
+    public void handleZombieHit(Player player, Zombie zombie) {
+        ActiveMatch match = activeMatches.get(player.getUniqueId());
+        if (match == null || !match.running())
+            return;
+        if (!plugin.isArenaZombie(zombie))
+            return;
+
+        String arenaId = zombie.getPersistentDataContainer().get(plugin.getArenaZombieKey(), PersistentDataType.STRING);
+        if (arenaId == null || !arenaId.equals(String.valueOf(match.arena().id())))
+            return;
+
+        String matchOwner = zombie.getPersistentDataContainer().get(plugin.getMatchPlayerKey(),
+                PersistentDataType.STRING);
+        if (matchOwner != null && !matchOwner.equals(match.playerId().toString()))
+            return;
+
+        int scorePerHit = plugin.getConfig().getInt("settings.score-per-hit", 1);
+        match.addScore(scorePerHit);
     }
 
     public void handleFatalDamage(Player player) {
