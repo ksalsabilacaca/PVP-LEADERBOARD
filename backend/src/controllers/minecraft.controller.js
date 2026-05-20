@@ -1,4 +1,5 @@
-const MinecraftScore = require('../models/minecraft.model');
+const { redisClient } = require('../database/database');
+const realtime = require('../realtime');
 
 const saveScore = async (req, res) => {
   const { username, score } = req.body;
@@ -8,11 +9,9 @@ const saveScore = async (req, res) => {
   }
 
   try {
-    await MinecraftScore.findOneAndUpdate(
-      { username },
-      { score },
-      { upsert: true, new: true }
-    );
+    // Upstash expects { score, member }
+    await redisClient.zadd('leaderboard:minecraft', { score: score, member: username });
+    realtime.broadcast('update', { game: 'minecraft' });
     res.status(200).json({ message: 'Score saved successfully' });
   } catch (error) {
     console.error(error);
@@ -22,8 +21,15 @@ const saveScore = async (req, res) => {
 
 const getScores = async (req, res) => {
   try {
-    const topScores = await MinecraftScore.find().sort({ score: -1 }).limit(100);
-    const formattedScores = topScores.map(s => ({ value: s.username, score: s.score }));
+    // Upstash returns a flat array: ['user1', 100, 'user2', 90]
+    const flatScores = await redisClient.zrange('leaderboard:minecraft', 0, 99, { rev: true, withScores: true });
+    
+    // Map flat array to [{ value: 'user', score: 100 }]
+    const formattedScores = [];
+    for (let i = 0; i < flatScores.length; i += 2) {
+      formattedScores.push({ value: flatScores[i], score: flatScores[i + 1] });
+    }
+
     res.status(200).json(formattedScores);
   } catch (error) {
     console.error(error);

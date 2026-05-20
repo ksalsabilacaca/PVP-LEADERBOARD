@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const minecraftScoreSchema = new mongoose.Schema({
+const othergameScoreSchema = new mongoose.Schema({
   username: {
     type: String,
     required: true,
@@ -12,6 +12,6 @@ const minecraftScoreSchema = new mongoose.Schema({
   }
 });
 
-const MinecraftScore = mongoose.model('MinecraftScore', minecraftScoreSchema);
+const OthergameScore = mongoose.model('OthergameScore', othergameScoreSchema);
 
-module.exports = MinecraftScore;
+module.exports = OthergameScore;

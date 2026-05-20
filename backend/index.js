@@ -5,6 +5,7 @@ const cors = require('cors');
 const { connectRedis, connectMongo } = require('./src/database/database');
 const minecraftRoutes = require('./src/routes/minecraft.routes');
 const othergameRoutes = require('./src/routes/othergame.routes');
+const generalRoutes = require('./src/routes/general.routes');
 
 const app = express();
 const port = 3000;
@@ -24,6 +25,7 @@ connectMongo();
 // Using different endpoints as required
 app.use('/api/minecraft/scores', minecraftRoutes);
 app.use('/api/othergame/scores', othergameRoutes);
+app.use('/api', generalRoutes);
 
 app.listen(port, () => {
   console.log(`Backend API running on port ${port}`);

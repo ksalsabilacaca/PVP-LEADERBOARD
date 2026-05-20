@@ -54,8 +54,8 @@ function Home() {
           </h1>
 
           <p className="text-gray-300 text-xl leading-relaxed mb-10">
-            Minecraft x Roblox unified competitive ranking platform
-            with realtime score updates powered by Redis Key-Value Store.
+            Unified competitive ranking platform with realtime score updates
+            powered by Redis Key-Value Store and MongoDB.
           </p>
 
           <div className="flex gap-6">
@@ -76,20 +76,6 @@ function Home() {
             >
               ENTER ARENA
             </Link>
-
-            <button
-              className="
-                px-8
-                py-4
-                border
-                border-cyan-400
-                rounded-xl
-                hover:bg-cyan-400/10
-                transition
-              "
-            >
-              VIEW SYSTEM
-            </button>
 
           </div>
 

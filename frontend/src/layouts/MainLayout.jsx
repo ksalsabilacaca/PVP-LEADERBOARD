@@ -34,20 +34,6 @@ function MainLayout({ children }) {
             LEADERBOARD
           </Link>
 
-          <Link
-            to="/simulation"
-            className="hover:text-cyan-400 transition"
-          >
-            SIMULATION
-          </Link>
-
-          <Link
-            to="/profile"
-            className="hover:text-cyan-400 transition"
-          >
-            PROFILE
-          </Link>
-
         </div>
 
       </nav>

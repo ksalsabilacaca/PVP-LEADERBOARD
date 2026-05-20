@@ -2,8 +2,8 @@ const { Redis } = require('@upstash/redis');
 const mongoose = require('mongoose');
 
 const redisClient = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
 const connectRedis = async () => {
@@ -17,7 +17,7 @@ const connectRedis = async () => {
 
 const connectMongo = async () => {
     try {
-        await mongoose.connect('mongodb://localhost:27017/pvp-leaderboard');
+        await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/pvp-leaderboard');
         console.log("MongoDB connected successfully");
     } catch (err) {
         console.error("Failed to connect to MongoDB", err);
