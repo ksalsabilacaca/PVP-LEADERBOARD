@@ -569,7 +569,22 @@ function Leaderboard() {
             >
               <p className="text-cyan-400 text-lg font-bold mb-4">PERBANDINGAN WAKTU PROSES</p>
               <div className="grid grid-cols-2 gap-8">
-                <div>
+                <div
+                  className="
+                    relative
+                    overflow-hidden
+                    bg-white/5
+                    backdrop-blur-xl
+                    border
+                    border-green-400/20
+                    p-6
+                    shadow-[0_0_40px_rgba(34,197,94,0.15)]
+                  "
+                  style={{
+                    clipPath:
+                      "polygon(0 0, 96% 0, 100% 8%, 100% 100%, 4% 100%, 0 92%)",
+                  }}
+                >
                   <p className="text-green-300 font-semibold text-center">Zombie Rush</p>
                   <p className="text-xs text-green-200/80 text-center mt-1 mb-4">
                     Source: {backendMetrics.zombierush?.source || "Belum tersedia"}
@@ -593,7 +608,22 @@ function Leaderboard() {
                     </div>
                   </div>
                 </div>
-                <div>
+                <div
+                  className="
+                    relative
+                    overflow-hidden
+                    bg-white/5
+                    backdrop-blur-xl
+                    border
+                    border-cyan-400/20
+                    p-6
+                    shadow-[0_0_40px_rgba(34,211,238,0.15)]
+                  "
+                  style={{
+                    clipPath:
+                      "polygon(0 0, 96% 0, 100% 8%, 100% 100%, 4% 100%, 0 92%)",
+                  }}
+                >
                   <p className="text-cyan-300 font-semibold text-center">Rock Paper Scissors</p>
                   <p className="text-xs text-cyan-200/80 text-center mt-1 mb-4">
                     Source: {backendMetrics.rps?.source || "Belum tersedia"}
