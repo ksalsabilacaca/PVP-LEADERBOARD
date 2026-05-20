@@ -1,4 +1,4 @@
-# Group 3 - SBD 01:
+# Group 3 - SBD 01
 1. Jesaya Hamonangan Gaudensius Malau (2406409845)
 2. Naziehan Labieb (2406487102)
 3. Salsabila Maharani Mumtaz (2406348156)
