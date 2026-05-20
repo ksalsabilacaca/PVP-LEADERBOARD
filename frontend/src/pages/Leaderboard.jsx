@@ -71,7 +71,7 @@ function unwrapResponse(response) {
 }
 
 async function getZombieRushLeaderboard(type) {
-  const response = await fetch(`${API_BASE_URL}/api/zombierush/leaderboard/${type}`);
+  const response = await fetch(`${API_BASE_URL}/zombierush/leaderboard/${type}`);
 
   if (!response.ok) {
     throw new Error(`Gagal mengambil leaderboard Zombie Rush ${type}.`);
@@ -118,7 +118,7 @@ function Leaderboard() {
   // Koneksi SSE realtime dari backend teman.
   // Jika ada update score, frontend akan refresh data.
   useEffect(() => {
-    const eventSource = new EventSource(`${API_BASE_URL}/api/scores/live`);
+    const eventSource = new EventSource(`${API_BASE_URL}/scores/live`);
 
     eventSource.onmessage = (event) => {
       try {

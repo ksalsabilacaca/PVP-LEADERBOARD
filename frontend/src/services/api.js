@@ -25,12 +25,12 @@ const unwrapLeaderboardResponse = (payload) => {
 };
 
 const getLeaderboardBest = async (limit = 50) => {
-    const data = await fetchJson(`${BASE_URL}/api/zombierush/leaderboard/best?limit=${limit}`);
+    const data = await fetchJson(`${BASE_URL}/zombierush/leaderboard/best?limit=${limit}`);
     return unwrapLeaderboardResponse(data);
 };
 
 const getLeaderboardTotal = async (limit = 50) => {
-    const data = await fetchJson(`${BASE_URL}/api/zombierush/leaderboard/total?limit=${limit}`);
+    const data = await fetchJson(`${BASE_URL}/zombierush/leaderboard/total?limit=${limit}`);
     return unwrapLeaderboardResponse(data);
 };
 
@@ -78,7 +78,7 @@ export async function getPlayerProfile(uuid) {
         return null;
     }
 
-    const player = await fetchJson(`${BASE_URL}/api/zombierush/player/${encodeURIComponent(targetUuid)}`);
+    const player = await fetchJson(`${BASE_URL}/zombierush/player/${encodeURIComponent(targetUuid)}`);
     const best = await getLeaderboardBest(200);
     const rankIndex = best.findIndex((entry) => entry.uuid === targetUuid);
     const rank = rankIndex >= 0 ? rankIndex + 1 : "-";
