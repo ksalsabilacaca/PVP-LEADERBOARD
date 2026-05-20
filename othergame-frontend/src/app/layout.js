@@ -4,9 +4,18 @@ export const metadata = {
   title: "RPS Arena | MinPro SBD 3",
   description: "Rock Paper Scissors leaderboard game for Mini Project SBD Kelompok 3.",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
-    apple: "/favicon.svg",
+    icon: [
+      {
+        url: "/favicon.svg?v=2",
+        type: "image/svg+xml",
+      },
+    ],
+    shortcut: [
+      {
+        url: "/favicon.svg?v=2",
+        type: "image/svg+xml",
+      },
+    ],
   },
 };
 
