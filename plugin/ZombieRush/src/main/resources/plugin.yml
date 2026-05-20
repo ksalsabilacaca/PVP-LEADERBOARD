@@ -1,0 +1,17 @@
+name: ZombieRush
+version: 1.0.0
+main: id.zulfahmifjr.zombierush.ZombieRushPlugin
+api-version: '1.21'
+author: ZulfahmiFjr
+description: Solo Zombie Rush match-based game with Redis leaderboard.
+
+commands:
+  zombierush:
+    description: Perintah utama ZombieRush.
+    usage: /zombierush help
+    aliases: [zr]
+
+permissions:
+  zombierush.admin:
+    description: Mengizinkan pengaturan admin ZombieRush.
+    default: op

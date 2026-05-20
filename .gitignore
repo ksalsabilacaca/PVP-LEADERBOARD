@@ -1,0 +1,13 @@
+# Java / Gradle
+.gradle/
+build/
+bin/
+out/
+target/
+*.class
+*.jar
+
+# Node
+node_modules/
+dist/
+.env

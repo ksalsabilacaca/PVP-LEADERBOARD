@@ -1,0 +1,61 @@
+# =========================================================
+# ZombieRush Configuration
+# =========================================================
+
+settings:
+  prefix: "&8[&cZombieRush&8] &r"
+  match-duration-seconds: 60
+  countdown-seconds: 5
+  score-per-zombie: 10
+  zombie-health: 6.0
+  survival-bonus: 100
+  max-active-zombies: 6
+  spawn-interval-seconds: 5
+  clear-player-inventory-during-match: true
+  restore-player-inventory-after-match: true
+  show-redis-timing-to-player: true
+  auto-setup-world-on-enable: true
+  auto-build-arenas-on-enable: true
+
+world:
+  name: "world_zombie_rush"
+  arena-y: 80
+  arena-spacing: 200
+  arena-count: 5
+  arena-radius: 25
+  wall-height: 5
+
+redis:
+  enabled: true
+  host: "127.0.0.1"
+  port: 6379
+  password: ""
+  database: 0
+  timeout-ms: 2000
+  key-prefix: "zombierush"
+
+npc:
+  enabled: false
+  world: "world"
+  x: 0.0
+  y: 80.0
+  z: 0.0
+  yaw: 0.0
+  pitch: 0.0
+
+leaderboard:
+  enabled: false
+  world: "world"
+  x: 0.0
+  y: 80.0
+  z: 0.0
+  update-interval-seconds: 5
+
+lobby:
+  enabled: false
+  world: "world"
+  x: 0.0
+  y: 80.0
+  z: 0.0
+  yaw: 0.0
+  pitch: 0.0
