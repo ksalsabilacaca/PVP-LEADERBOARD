@@ -15,7 +15,7 @@ function MainLayout({ children }) {
           to="/"
           className="text-2xl font-bold text-cyan-400 tracking-widest"
         >
-          GROUP 3
+          KELOMPOK 3
         </Link>
 
         <div className="flex gap-12 text-lg">
@@ -24,7 +24,7 @@ function MainLayout({ children }) {
             to="/"
             className="hover:text-cyan-400 transition"
           >
-            HOME
+            BERANDA
           </Link>
 
           <Link

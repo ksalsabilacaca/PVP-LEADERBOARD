@@ -37,6 +37,7 @@ function Leaderboard() {
   // 2. Fetch stats and leaderboard data on mount or when refreshTrigger/activeTab updates
   useEffect(() => {
     async function fetchData() {
+      setPlayers([]); // Clear current players while fetching new data
       try {
         const statsData = await getStats();
         setStats(statsData);
@@ -47,29 +48,17 @@ function Leaderboard() {
         } else if (activeTab === "roblox") {
           data = await getRobloxLeaderboard();
         }
-        setPlayers(data);
+        setPlayers(data || []);
       } catch (error) {
-        console.log(error);
+        console.error(error);
+        setPlayers([]); // Ensure it's cleared if the fetch throws an error
       }
     }
     fetchData();
   }, [activeTab, refreshTrigger]);
 
-  async function loadLeaderboard(type) {
-    try {
-      let data = [];
-      if (type === "minecraft") {
-        data = await getMinecraftLeaderboard();
-      } else if (type === "roblox") {
-        data = await getRobloxLeaderboard();
-      }
-
-      setPlayers(data);
-      setActiveTab(type);
-
-    } catch (error) {
-      console.log(error);
-    }
+  function loadLeaderboard(type) {
+    setActiveTab(type);
   }
 
   return (
@@ -81,13 +70,13 @@ function Leaderboard() {
         <div className="mb-14">
 
           <p className="text-cyan-400 tracking-[10px] mb-4">
-            REDIS REALTIME SYSTEM
+            SISTEM REDIS REALTIME
           </p>
 
           <h1 className="text-7xl font-black leading-tight">
-            GLOBAL
-            <br />
             LEADERBOARD
+            <br />
+            ZOMBIERUSH
           </h1>
 
         </div>
@@ -114,7 +103,7 @@ function Leaderboard() {
           >
 
             <p className="text-yellow-400 text-lg mb-3">
-              TOP PLAYER
+              PEMAIN TERATAS
             </p>
 
             <h2 className="text-4xl font-black mb-2">
@@ -146,7 +135,7 @@ function Leaderboard() {
           >
 
             <p className="text-green-400 text-lg mb-3">
-              TOTAL PLAYERS
+              TOTAL PEMAIN
             </p>
 
             <h2 className="text-4xl font-black mb-2">
@@ -154,7 +143,7 @@ function Leaderboard() {
             </h2>
 
             <p className="text-gray-300">
-              Across All Games
+              Total Data Tersimpan
             </p>
 
           </div>

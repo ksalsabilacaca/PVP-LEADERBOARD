@@ -42,15 +42,15 @@ function Home() {
         <div className="max-w-[600px]">
 
           <p className="text-cyan-400 tracking-[10px] mb-4">
-            REDIS POWERED SYSTEM
+            SISTEM REDIS REALTIME
           </p>
 
           <h1 className="text-7xl font-black leading-tight mb-6">
-            REALTIME
-            <br />
-            PVP
-            <br />
             LEADERBOARD
+            <br />
+            ZOMBIERUSH
+            <br />
+            MINI PROJECT SBD
           </h1>
 
           <p className="text-gray-300 text-xl leading-relaxed mb-10">
@@ -74,7 +74,7 @@ function Home() {
                 shadow-[0_0_30px_rgba(34,211,238,0.8)]
               "
             >
-              ENTER ARENA
+              MASUK LEADERBOARD
             </Link>
 
           </div>

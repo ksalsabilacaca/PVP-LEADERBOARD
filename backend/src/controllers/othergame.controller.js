@@ -5,7 +5,7 @@ const saveScore = async (req, res) => {
   const { username, score } = req.body;
 
   if (!username || typeof score !== 'number') {
-    return res.status(400).json({ error: 'Requires username and score' });
+    return res.status(400).json({ error: 'Memerlukan username dan score (number).' });
   }
 
   try {
@@ -18,7 +18,7 @@ const saveScore = async (req, res) => {
     res.status(200).json({ message: 'Score saved successfully' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to write to database' });
+    res.status(500).json({ error: 'Gagal menyimpan skor othergame ke database.' });
   }
 };
 
@@ -29,7 +29,7 @@ const getScores = async (req, res) => {
     res.status(200).json(formattedScores);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to read from database' });
+    res.status(500).json({ error: 'Gagal mengambil skor othergame dari database.' });
   }
 };
 
