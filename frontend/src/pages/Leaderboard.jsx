@@ -522,11 +522,11 @@ function Leaderboard() {
 
         {/* FILTER BUTTONS */}
         <div className="flex flex-wrap gap-5 mb-10">
-            <button
-              onClick={() => loadLeaderboard("zombierush")}
-              className={tabClass("zombierush", "green")}
-            >
-              BEST ZOMBIE RUSH
+          <button
+            onClick={() => loadLeaderboard("zombierush")}
+            className={tabClass("zombierush", "green")}
+          >
+            BEST ZOMBIE RUSH
           </button>
 
           <button
@@ -540,21 +540,6 @@ function Leaderboard() {
             ALL GAME
           </button>
 
-          <button
-            onClick={refreshLeaderboard}
-            className="
-              px-6
-              py-3
-              rounded-xl
-              font-bold
-              transition
-              border
-              border-white/20
-              hover:bg-white/10
-            "
-          >
-            REFRESH DATA
-          </button>
         </div>
 
         {activeTab === "all" ? (
