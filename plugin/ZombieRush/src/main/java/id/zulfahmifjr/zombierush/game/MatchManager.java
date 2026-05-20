@@ -25,6 +25,8 @@ public class MatchManager {
     private final Map<UUID, ActiveMatch> activeMatches = new HashMap<>();
     private final Queue<UUID> queue = new ArrayDeque<>();
     private final Random random = new Random();
+    private static final int HEALTH_BAR_LENGTH = 10;
+    private static final char HEALTH_BAR_CHAR = '|';
 
     public MatchManager(ZombieRushPlugin plugin, ArenaManager arenaManager) {
         this.plugin = plugin;
@@ -205,8 +207,6 @@ public class MatchManager {
                 z.setRemoveWhenFarAway(false);
                 z.setPersistent(false);
                 z.setTarget(player);
-                z.setCustomName(ChatColor.RED + "Zombie Rush");
-                z.setCustomNameVisible(false);
                 double zombieHealth = Math.max(1.0, plugin.getConfig().getDouble("settings.zombie-health", 6.0));
                 if (z.getAttribute(Attribute.GENERIC_MAX_HEALTH) != null) {
                     z.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(zombieHealth);
@@ -216,6 +216,7 @@ public class MatchManager {
                         String.valueOf(arena.id()));
                 z.getPersistentDataContainer().set(plugin.getMatchPlayerKey(), PersistentDataType.STRING,
                         match.playerId().toString());
+                updateZombieHealthBar(z);
             });
             match.addZombie(zombie);
         }
@@ -261,6 +262,35 @@ public class MatchManager {
 
         int scorePerHit = plugin.getConfig().getInt("settings.score-per-hit", 1);
         match.addScore(scorePerHit);
+    }
+
+    public void updateZombieHealthBar(Zombie zombie) {
+        if (zombie == null || zombie.isDead())
+            return;
+        double maxHealth = 20.0D;
+        if (zombie.getAttribute(Attribute.GENERIC_MAX_HEALTH) != null) {
+            maxHealth = zombie.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+        }
+        if (maxHealth <= 0.0D)
+            return;
+
+        double health = Math.max(0.0D, zombie.getHealth());
+        double ratio = Math.max(0.0D, Math.min(1.0D, health / maxHealth));
+        int filled = (int) Math.ceil(ratio * HEALTH_BAR_LENGTH);
+        filled = Math.max(0, Math.min(HEALTH_BAR_LENGTH, filled));
+
+        StringBuilder bar = new StringBuilder();
+        bar.append(ChatColor.GREEN);
+        for (int i = 0; i < filled; i++) {
+            bar.append(HEALTH_BAR_CHAR);
+        }
+        bar.append(ChatColor.DARK_GRAY);
+        for (int i = filled; i < HEALTH_BAR_LENGTH; i++) {
+            bar.append(HEALTH_BAR_CHAR);
+        }
+
+        zombie.setCustomName(bar.toString());
+        zombie.setCustomNameVisible(true);
     }
 
     public void handleFatalDamage(Player player) {

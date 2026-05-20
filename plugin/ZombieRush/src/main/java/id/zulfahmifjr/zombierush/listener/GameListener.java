@@ -8,6 +8,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -79,6 +80,18 @@ public class GameListener implements Listener {
         if (plugin.getJoinNpcManager().isJoinNpc(event.getEntity())) {
             event.setCancelled(true);
         }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onZombieDamageBar(EntityDamageEvent event) {
+        if (event.isCancelled())
+            return;
+        if (!(event.getEntity() instanceof Zombie zombie))
+            return;
+        if (!plugin.isArenaZombie(zombie))
+            return;
+
+        plugin.getServer().getScheduler().runTask(plugin, () -> plugin.getMatchManager().updateZombieHealthBar(zombie));
     }
 
     @EventHandler
