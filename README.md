@@ -14,7 +14,7 @@ Platform leaderboard multi-game yang mengintegrasikan backend API, dua frontend 
 
 ## Meet Our Team
 
-| Nama | NIM |
+| Nama | NPM |
 | --- | --- |
 | Jesaya Hamonangan Gaudensius Malau | 2406409845 |
 | Naziehan Labieb | 2406487102 |
