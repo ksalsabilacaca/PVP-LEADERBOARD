@@ -316,6 +316,10 @@ public class MatchManager {
                 reason,
                 Instant.now());
 
+        if (plugin.getZombieRushApiClient() != null) {
+            plugin.getZombieRushApiClient().sendMatchResult(result);
+        }
+
         arenaManager.release(match.arena());
 
         if (player != null && player.isOnline()) {

@@ -6,6 +6,7 @@ import id.zulfahmifjr.zombierush.game.MatchManager;
 import id.zulfahmifjr.zombierush.hub.HubManager;
 import id.zulfahmifjr.zombierush.hub.HubProtectionListener;
 import id.zulfahmifjr.zombierush.hub.PlayerJoinListener;
+import id.zulfahmifjr.zombierush.integration.ZombieRushApiClient;
 import id.zulfahmifjr.zombierush.leaderboard.LeaderboardHologramManager;
 import id.zulfahmifjr.zombierush.leaderboard.LeaderboardService;
 import id.zulfahmifjr.zombierush.leaderboard.RedisLeaderboardService;
@@ -37,6 +38,7 @@ public class ZombieRushPlugin extends JavaPlugin {
     private LeaderboardHologramManager leaderboardHologramManager;
     private PlacementManager placementManager;
     private HubManager hubManager;
+    private ZombieRushApiClient zombieRushApiClient;
 
     @Override
     public void onEnable() {
@@ -60,6 +62,7 @@ public class ZombieRushPlugin extends JavaPlugin {
         leaderboardHologramManager = new LeaderboardHologramManager(this);
         placementManager = new PlacementManager();
         hubManager = new HubManager(this);
+        zombieRushApiClient = new ZombieRushApiClient(this);
 
         getServer().getPluginManager().registerEvents(new PlacementListener(this, placementManager), this);
         getServer().getPluginManager().registerEvents(new GameListener(this), this);
@@ -170,5 +173,9 @@ public class ZombieRushPlugin extends JavaPlugin {
 
     public HubManager getHubManager() {
         return hubManager;
+    }
+
+    public ZombieRushApiClient getZombieRushApiClient() {
+        return zombieRushApiClient;
     }
 }
