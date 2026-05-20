@@ -570,7 +570,10 @@ function Leaderboard() {
               <p className="text-cyan-400 text-lg font-bold mb-4">PERBANDINGAN WAKTU PROSES</p>
               <div className="grid grid-cols-2 gap-8">
                 <div>
-                  <p className="text-green-300 font-semibold mb-3">Zombie Rush</p>
+                  <p className="text-green-300 font-semibold text-center">Zombie Rush</p>
+                  <p className="text-xs text-green-200/80 text-center mt-1 mb-4">
+                    Source: {backendMetrics.zombierush?.source || "Belum tersedia"}
+                  </p>
                   <div className="space-y-4 text-gray-200">
                     <div>
                       <p className="text-xs uppercase text-green-200">Frontend Metrics</p>
@@ -586,13 +589,15 @@ function Leaderboard() {
                         <div>Backend Query: {formatMs(backendMetrics.zombierush?.queryMs)}</div>
                         <div>Backend Process: {formatMs(backendMetrics.zombierush?.processMs)}</div>
                         <div>Backend Total: {formatMs(backendMetrics.zombierush?.totalMs)}</div>
-                        <div>Source: {backendMetrics.zombierush?.source || "Belum tersedia"}</div>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div>
-                  <p className="text-cyan-300 font-semibold mb-3">Rock Paper Scissors</p>
+                  <p className="text-cyan-300 font-semibold text-center">Rock Paper Scissors</p>
+                  <p className="text-xs text-cyan-200/80 text-center mt-1 mb-4">
+                    Source: {backendMetrics.rps?.source || "Belum tersedia"}
+                  </p>
                   <div className="space-y-4 text-gray-200">
                     <div>
                       <p className="text-xs uppercase text-cyan-200">Frontend Metrics</p>
@@ -608,7 +613,6 @@ function Leaderboard() {
                         <div>Backend Query: {formatMs(backendMetrics.rps?.queryMs)}</div>
                         <div>Backend Process: {formatMs(backendMetrics.rps?.processMs)}</div>
                         <div>Backend Total: {formatMs(backendMetrics.rps?.totalMs)}</div>
-                        <div>Source: {backendMetrics.rps?.source || "Belum tersedia"}</div>
                       </div>
                     </div>
                   </div>
