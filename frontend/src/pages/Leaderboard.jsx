@@ -234,7 +234,20 @@ function Leaderboard() {
       ? rpsPlayers.length
       : zombieRushPlayers.length + rpsPlayers.length;
   const currentTiming = activeTab === "rps" ? timings.rps : timings.zombierush;
-  const totalDiff = Math.abs(timings.zombierush.totalMs - timings.rps.totalMs);
+  const zombierushTotalMs = timings.zombierush.totalMs;
+  const rpsTotalMs = timings.rps.totalMs;
+  const hasTotalTimes =
+    Number.isFinite(zombierushTotalMs) &&
+    Number.isFinite(rpsTotalMs) &&
+    (zombierushTotalMs > 0 || rpsTotalMs > 0);
+  const totalDiff = Math.abs(zombierushTotalMs - rpsTotalMs);
+  const totalDiffText = hasTotalTimes ? formatMs(totalDiff) : "-";
+  const diffIsTie = hasTotalTimes && totalDiff < 0.01;
+  const diffWinner = !hasTotalTimes || diffIsTie
+    ? null
+    : zombierushTotalMs < rpsTotalMs
+    ? { label: "Redis Win", className: "text-emerald-400" }
+    : { label: "MongoDB Win", className: "text-amber-400" };
   const currentBackend = activeTab === "rps" ? backendMetrics.rps : backendMetrics.zombierush;
 
   function tabClass(tabName, color = "cyan") {
@@ -567,35 +580,56 @@ function Leaderboard() {
               <div className="grid grid-cols-2 gap-8">
                 <div>
                   <p className="text-green-300 font-semibold mb-3">Zombie Rush</p>
-                  <div className="space-y-2 text-gray-200">
-                    <p className="text-xs uppercase text-green-200">Frontend Metrics</p>
-                    <div>Frontend Fetch: {formatMs(timings.zombierush.fetchMs)}</div>
-                    <div>Frontend Process: {formatMs(timings.zombierush.processMs)}</div>
-                    <div>Frontend Total: {formatMs(timings.zombierush.totalMs)}</div>
-                    <p className="text-xs uppercase text-green-200 mt-3">Backend Metrics</p>
-                    <div>Backend Query: {formatMs(backendMetrics.zombierush?.queryMs)}</div>
-                    <div>Backend Process: {formatMs(backendMetrics.zombierush?.processMs)}</div>
-                    <div>Backend Total: {formatMs(backendMetrics.zombierush?.totalMs)}</div>
-                    <div>Source: {backendMetrics.zombierush?.source || "Belum tersedia"}</div>
+                  <div className="space-y-4 text-gray-200">
+                    <div>
+                      <p className="text-xs uppercase text-green-200">Frontend Metrics</p>
+                      <div className="mt-2 pl-4 space-y-1 text-sm text-gray-300">
+                        <div>Frontend Fetch: {formatMs(timings.zombierush.fetchMs)}</div>
+                        <div>Frontend Process: {formatMs(timings.zombierush.processMs)}</div>
+                        <div>Frontend Total: {formatMs(timings.zombierush.totalMs)}</div>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase text-green-200">Backend Metrics</p>
+                      <div className="mt-2 pl-4 space-y-1 text-sm text-gray-300">
+                        <div>Backend Query: {formatMs(backendMetrics.zombierush?.queryMs)}</div>
+                        <div>Backend Process: {formatMs(backendMetrics.zombierush?.processMs)}</div>
+                        <div>Backend Total: {formatMs(backendMetrics.zombierush?.totalMs)}</div>
+                        <div>Source: {backendMetrics.zombierush?.source || "Belum tersedia"}</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div>
                   <p className="text-cyan-300 font-semibold mb-3">Rock Paper Scissors</p>
-                  <div className="space-y-2 text-gray-200">
-                    <p className="text-xs uppercase text-cyan-200">Frontend Metrics</p>
-                    <div>Frontend Fetch: {formatMs(timings.rps.fetchMs)}</div>
-                    <div>Frontend Process: {formatMs(timings.rps.processMs)}</div>
-                    <div>Frontend Total: {formatMs(timings.rps.totalMs)}</div>
-                    <p className="text-xs uppercase text-cyan-200 mt-3">Backend Metrics</p>
-                    <div>Backend Query: {formatMs(backendMetrics.rps?.queryMs)}</div>
-                    <div>Backend Process: {formatMs(backendMetrics.rps?.processMs)}</div>
-                    <div>Backend Total: {formatMs(backendMetrics.rps?.totalMs)}</div>
-                    <div>Source: {backendMetrics.rps?.source || "Belum tersedia"}</div>
+                  <div className="space-y-4 text-gray-200">
+                    <div>
+                      <p className="text-xs uppercase text-cyan-200">Frontend Metrics</p>
+                      <div className="mt-2 pl-4 space-y-1 text-sm text-gray-300">
+                        <div>Frontend Fetch: {formatMs(timings.rps.fetchMs)}</div>
+                        <div>Frontend Process: {formatMs(timings.rps.processMs)}</div>
+                        <div>Frontend Total: {formatMs(timings.rps.totalMs)}</div>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase text-cyan-200">Backend Metrics</p>
+                      <div className="mt-2 pl-4 space-y-1 text-sm text-gray-300">
+                        <div>Backend Query: {formatMs(backendMetrics.rps?.queryMs)}</div>
+                        <div>Backend Process: {formatMs(backendMetrics.rps?.processMs)}</div>
+                        <div>Backend Total: {formatMs(backendMetrics.rps?.totalMs)}</div>
+                        <div>Source: {backendMetrics.rps?.source || "Belum tersedia"}</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
               <p className="mt-6 text-yellow-300 font-semibold">
-                Selisih total waktu: {formatMs(totalDiff)}
+                Selisih total waktu: {totalDiffText}
+                {diffWinner && (
+                  <span className={`ml-2 font-bold ${diffWinner.className}`}>
+                    ({diffWinner.label})
+                  </span>
+                )}
               </p>
               <button
                 onClick={refreshLeaderboard}
