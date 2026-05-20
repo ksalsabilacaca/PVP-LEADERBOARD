@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import MainLayout from "../layouts/MainLayout";
-import { getLeaderboard, getStats, getMinecraftLeaderboard, getRobloxLeaderboard,} from "../services/api";
+import { getLeaderboard, getStats, getMinecraftLeaderboard, getRobloxLeaderboard } from "../services/api";
 
 function Leaderboard() {
 
   const [players, setPlayers] = useState([]);
   const [stats, setStats] = useState({});
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState("best");
 
   useEffect(() => {
     async function fetchData() {
@@ -18,7 +18,7 @@ function Leaderboard() {
 
             setStats(statsData);
 
-            loadLeaderboard("all");
+            loadLeaderboard("best");
 
             } catch (error) {
 
@@ -35,9 +35,9 @@ function Leaderboard() {
     async function loadLeaderboard(type) {
         try {
             let data = [];
-            if (type === "minecraft") {
+        if (type === "best") {
                 data = await getMinecraftLeaderboard();
-            } else if (type === "roblox") {
+        } else if (type === "total") {
                 data = await getRobloxLeaderboard();
             } else {
                 data = await getLeaderboard();
@@ -60,13 +60,13 @@ function Leaderboard() {
         <div className="mb-14">
 
           <p className="text-cyan-400 tracking-[10px] mb-4">
-            REDIS REALTIME SYSTEM
+            SISTEM REDIS REALTIME
           </p>
 
           <h1 className="text-7xl font-black leading-tight">
-            GLOBAL
-            <br />
             LEADERBOARD
+            <br />
+            ZOMBIERUSH
           </h1>
 
         </div>
@@ -93,7 +93,7 @@ function Leaderboard() {
           >
 
             <p className="text-yellow-400 text-lg mb-3">
-              TOP PLAYER
+              PEMAIN TERATAS
             </p>
 
             <h2 className="text-4xl font-black mb-2">
@@ -101,7 +101,7 @@ function Leaderboard() {
             </h2>
 
             <p className="text-gray-300">
-              {stats.topTrophy} Trophy
+              {stats.topTrophy} Skor
             </p>
 
           </div>
@@ -125,7 +125,7 @@ function Leaderboard() {
           >
 
             <p className="text-cyan-400 text-lg mb-3">
-              LIVE MATCHES
+              MATCH AKTIF
             </p>
 
             <h2 className="text-4xl font-black mb-2">
@@ -133,7 +133,7 @@ function Leaderboard() {
             </h2>
 
             <p className="text-gray-300">
-              Currently Active
+              Sedang Berjalan
             </p>
 
           </div>
@@ -157,7 +157,7 @@ function Leaderboard() {
           >
 
             <p className="text-green-400 text-lg mb-3">
-              TOTAL PLAYERS
+              TOTAL PEMAIN
             </p>
 
             <h2 className="text-4xl font-black mb-2">
@@ -165,7 +165,7 @@ function Leaderboard() {
             </h2>
 
             <p className="text-gray-300">
-              Across All Games
+              Total Data Tersimpan
             </p>
 
           </div>
@@ -177,9 +177,9 @@ function Leaderboard() {
 
             {/* ALL */}
             <button
-                onClick={() =>
-                loadLeaderboard("all")
-                }
+              onClick={() =>
+              loadLeaderboard("all")
+              }
                     className={`
                     px-6
                     py-3    
@@ -194,14 +194,14 @@ function Leaderboard() {
                     }
                 `}
             >
-                ALL
+                    SEMUA
             </button>
 
             {/* MINECRAFT */}
             <button
-                onClick={() =>
-                    loadLeaderboard("minecraft")
-                }
+              onClick={() =>
+                loadLeaderboard("best")
+              }
                 className={`
                     px-6
                     py-3
@@ -210,20 +210,20 @@ function Leaderboard() {
                     transition
 
                     ${
-                        activeTab === "minecraft"
+                  activeTab === "best"
                             ? "bg-green-400 text-black shadow-[0_0_25px_rgba(34,197,94,0.8)]"
                             : "border border-green-400 hover:bg-green-400/10"
                     }
                 `}
             >
-                MINECRAFT
+              BEST
             </button>
 
             {/* ROBLOX */}
             <button
-                onClick={() =>
-                    loadLeaderboard("roblox")
-                }
+              onClick={() =>
+                loadLeaderboard("total")
+              }
                 className={`
                     px-6
                     py-3
@@ -232,13 +232,13 @@ function Leaderboard() {
                     transition
 
                     ${
-                        activeTab === "roblox"
+                  activeTab === "total"
                             ? "bg-cyan-400 text-black shadow-[0_0_25px_rgba(34,211,238,0.8)]"
                             : "border border-cyan-400 hover:bg-cyan-400/10"
                     }
                 `}
             >
-                ROBLOX
+              TOTAL
             </button>
         </div>
 
@@ -272,10 +272,10 @@ function Leaderboard() {
             "
           >
 
-            <div>RANK</div>
-            <div>PLAYER</div>
-            <div>GAME</div>
-            <div>TROPHY</div>
+            <div>PERINGKAT</div>
+            <div>PEMAIN</div>
+            <div>MODE</div>
+            <div>SKOR</div>
 
           </div>
 
@@ -317,28 +317,25 @@ function Leaderboard() {
                         font-semibold
 
                         ${
-                         activeTab === "minecraft"
-                            ? "bg-green-500/20 text-green-300"
+                        activeTab === "best"
+                          ? "bg-green-500/20 text-green-300"
 
-                            : activeTab === "roblox"
-                            ? "bg-cyan-500/20 text-cyan-300"
+                          : activeTab === "total"
+                          ? "bg-cyan-500/20 text-cyan-300"
 
-                            : player.game === "Minecraft"
-                            ? "bg-green-500/20 text-green-300"
-
-                            : "bg-cyan-500/20 text-cyan-300"
+                          : "bg-cyan-500/20 text-cyan-300"
                         }
                      `}
                     >
 
                     {
-                        activeTab === "minecraft"
-                            ? "Minecraft"
+                        activeTab === "best"
+                          ? "Best Score"
 
-                            : activeTab === "roblox"
-                            ? "Roblox"
+                          : activeTab === "total"
+                          ? "Total Score"
 
-                            : player.game
+                          : player.game
                     }
                 </span>
 

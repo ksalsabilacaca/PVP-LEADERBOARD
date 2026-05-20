@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import MainLayout from "../layouts/MainLayout";
-import { simulateMatch, getPlayers,} from "../services/api";
+import { simulateMatch, getPlayers } from "../services/api";
 
 function Simulation() {
 
@@ -62,13 +62,13 @@ function Simulation() {
         <div className="mb-14">
 
           <p className="text-cyan-400 tracking-[10px] mb-4">
-            LIVE MATCH ENGINE
+            SIMULASI MATCH
           </p>
 
           <h1 className="text-7xl font-black leading-tight">
-            MATCH
+            SIMULASI
             <br />
-            SIMULATION
+            PERTANDINGAN
           </h1>
 
         </div>
@@ -92,7 +92,7 @@ function Simulation() {
           >
 
             <h2 className="text-3xl font-black mb-10">
-              START PvP MATCH
+              MULAI SIMULASI
             </h2>
 
             <div className="space-y-6">
@@ -113,7 +113,7 @@ function Simulation() {
                 "
               >
                 <option>Minecraft</option>
-                <option>Roblox</option>
+                <option>Othergame</option>
               </select>
 
               {/* PLAYER 1 */}
@@ -133,7 +133,7 @@ function Simulation() {
               >
 
                 <option value="">
-                  Select Player 1
+                  Pilih Pemain 1
                 </option>
 
                 {players.map((player) => (
@@ -166,7 +166,7 @@ function Simulation() {
               >
 
                 <option value="">
-                  Select Player 2
+                  Pilih Pemain 2
                 </option>
 
                 {players.map((player) => (
@@ -196,7 +196,7 @@ function Simulation() {
                   shadow-[0_0_30px_rgba(34,211,238,0.8)]
                 "
               >
-                START MATCH
+                JALANKAN SIMULASI
               </button>
 
             </div>
@@ -220,21 +220,21 @@ function Simulation() {
           >
 
             <h2 className="text-3xl font-black mb-10">
-              LIVE UPDATES
+              UPDATE TERKINI
             </h2>
 
             <div className="space-y-5">
 
               <div className="bg-black/20 p-5 rounded-xl border border-white/5">
-                Redis leaderboard synced
+                Leaderboard Redis tersinkron
               </div>
 
               <div className="bg-black/20 p-5 rounded-xl border border-white/5">
-                Minecraft PvP match started
+                ZombieRush siap dimainkan
               </div>
 
               <div className="bg-black/20 p-5 rounded-xl border border-white/5">
-                Roblox Arena active
+                Othergame menunggu konfigurasi
               </div>
 
               {message && (

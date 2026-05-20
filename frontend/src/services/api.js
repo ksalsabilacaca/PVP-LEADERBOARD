@@ -1,122 +1,115 @@
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = import.meta.env?.VITE_API_BASE_URL || "http://localhost:3000";
 
-export async function getStats() { //kalo udah ada backend:  const response = await fetch( `${BASE_URL}/stats`); return response.json();
+const fetchJson = async (url, options) => {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+        throw new Error(`Request gagal: ${response.status}`);
+    }
+    return response.json();
+};
 
-  return {
-    topPlayer: "DragonX",
-    topTrophy: 5420,
-    liveMatches: 128,
-    totalPlayers: 12540,
-  };
+const mapLeaderboard = (entries, gameLabel) =>
+    entries.map((entry, index) => ({
+        rank: entry.rank ?? index + 1,
+        uuid: entry.uuid,
+        username: entry.playerName || entry.uuid,
+        game: gameLabel,
+        trophy: Number(entry.score) || 0,
+    }));
 
+const getLeaderboardBest = async (limit = 50) => {
+    const data = await fetchJson(`${BASE_URL}/api/zombierush/leaderboard/best?limit=${limit}`);
+    return Array.isArray(data) ? data : [];
+};
+
+const getLeaderboardTotal = async (limit = 50) => {
+    const data = await fetchJson(`${BASE_URL}/api/zombierush/leaderboard/total?limit=${limit}`);
+    return Array.isArray(data) ? data : [];
+};
+
+export async function getStats() {
+    try {
+        const best = await getLeaderboardBest(50);
+        const top = best[0];
+        return {
+            topPlayer: top ? top.playerName : "Belum ada data",
+            topTrophy: top ? top.score : 0,
+            liveMatches: 0,
+            totalPlayers: best.length,
+        };
+    } catch (error) {
+        console.log(error);
+        return {
+            topPlayer: "Belum ada data",
+            topTrophy: 0,
+            liveMatches: 0,
+            totalPlayers: 0,
+        };
+    }
 }
 
-export async function getLeaderboard() { //kalo udah ada backend:    const response = await fetch(`${BASE_URL}/leaderboard`); return response.json();
-  return [
-    {
-      rank: 1,
-      username: "DragonX",
-      game: "Minecraft",
-      trophy: 5420,
-    },
-    {
-      rank: 2,
-      username: "ShadowNinja",
-      game: "Roblox",
-      trophy: 5310,
-    },
-    {
-      rank: 3,
-      username: "StevePro",
-      game: "Minecraft",
-      trophy: 5200,
-    },
-  ];
+export async function getLeaderboard() {
+    const data = await getLeaderboardBest(50);
+    return mapLeaderboard(data, "ZombieRush");
 }
 
-export async function getPlayers() { //kalo udah ada backend: const response = await fetch(`${BASE_URL}/players`); return response.json();
-    return [
-        {
-            username: "DragonX",
-        },
-        {
-            username: "ShadowNinja",
-        },
-        {
-            username: "StevePro",
-        },
-        {
-            username: "BlockMaster",
-        },
-    ];
+export async function getPlayers() {
+    const data = await getLeaderboardBest(50);
+    return data.map((entry) => ({
+        uuid: entry.uuid,
+        username: entry.playerName || entry.uuid
+    }));
 }
 
-export async function getPlayerProfile(username) { //kalo udah ada backend: const response = await fetch(`${BASE_URL}/player/${username}`); return response.json();
+export async function getPlayerProfile(uuid) {
+    let targetUuid = uuid;
+    if (!targetUuid) {
+        const best = await getLeaderboardBest(1);
+        targetUuid = best[0]?.uuid;
+    }
+    if (!targetUuid) {
+        return null;
+    }
+
+    const player = await fetchJson(`${BASE_URL}/api/zombierush/player/${encodeURIComponent(targetUuid)}`);
+    const best = await getLeaderboardBest(200);
+    const rankIndex = best.findIndex((entry) => entry.uuid === targetUuid);
+    const rank = rankIndex >= 0 ? rankIndex + 1 : "-";
+
     return {
-        username: username,
-        game: "Minecraft",
-        rank: 1,
-        trophy: 5420,
-        wins: 231,
-        losses: 52,
-        country: "Indonesia",
-
+        uuid: player.uuid,
+        username: player.playerName || player.uuid,
+        game: "ZombieRush",
+        rank,
+        bestScore: player.bestScore,
+        totalScore: player.totalScore,
+        totalKills: player.totalKills,
+        totalMatches: player.totalMatches,
+        averageScore: player.averageScore,
+        lastPlayedAt: player.lastPlayedAt,
         history: [
-            "Victory vs ShadowNinja (+30 Trophy)",
-            "Victory vs BlockMaster (+25 Trophy)",
-            "Reached Global Rank #1",
-            "Won Roblox Arena Match",
+            `Best Score: ${player.bestScore}`,
+            `Total Score: ${player.totalScore}`,
+            `Total Kill: ${player.totalKills}`,
+            `Total Match: ${player.totalMatches}`,
+            `Rata-rata skor: ${player.averageScore}`,
         ],
     };
 }
 
-export async function getMinecraftLeaderboard() { //kalo udah ada backend: const response = await fetch(`${BASE_URL}/leaderboard/minecraft`); return response.json();
-    return [
-        {
-            rank: 1,
-            username: "DragonX",
-            trophy: 5420,
-        },
-        {
-            rank: 2,
-            username: "StevePro",
-            trophy: 5200,
-        },
-        {
-            rank: 3,
-            username: "BlockMaster",
-            trophy: 5000,
-        },
-    ];
-
+export async function getMinecraftLeaderboard() {
+    const data = await getLeaderboardBest(50);
+    return mapLeaderboard(data, "ZombieRush");
 }
 
-export async function getRobloxLeaderboard() { //kalo udah ada backend: const response = await fetch(`${BASE_URL}/leaderboard/roblox`); return response.json();
-    return [
-        {
-            rank: 1,
-            username: "ShadowNinja",
-            trophy: 5310,
-        },
-        {
-            rank: 2,
-            username: "NoobHunter",
-            trophy: 5100,
-        },
-        {
-            rank: 3,
-            username: "PixelWarrior",
-            trophy: 4980,
-        },
-    ];
+export async function getRobloxLeaderboard() {
+    const data = await getLeaderboardTotal(50);
+    return mapLeaderboard(data, "ZombieRush");
 }
 
-export async function simulateMatch(matchData) { //kalo udah ada backend: const response = await fetch(`${BASE_URL}/simulate-match`), {method: "POST", headers: {"Content-Type": "application/json",}, body: JSON.stringify(matchData),}}; return response.json();
+export async function simulateMatch(matchData) {
     return {
         success: true,
-
-        message:
-            `${matchData.player1} defeated ${matchData.player2} (+30 Trophy)`
+        message: `Simulasi: ${matchData.player1} melawan ${matchData.player2} berhasil dijalankan.`
     };
-
 }

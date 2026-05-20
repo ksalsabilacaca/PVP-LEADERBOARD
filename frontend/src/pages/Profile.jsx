@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import MainLayout from "../layouts/MainLayout";
 
-import { getPlayerProfile,} from "../services/api";
+import { getPlayerProfile } from "../services/api";
 
 function Profile() {
 
@@ -15,9 +15,7 @@ function Profile() {
       try {
 
         const data =
-          await getPlayerProfile(
-            "DragonX"
-          );
+          await getPlayerProfile();
 
         setPlayer(data);
 
@@ -45,13 +43,13 @@ function Profile() {
         <div className="mb-14">
 
           <p className="text-cyan-400 tracking-[10px] mb-4">
-            PLAYER ANALYTICS
+            ANALISIS PEMAIN
           </p>
 
           <h1 className="text-7xl font-black leading-tight">
-            PLAYER
+            PROFIL
             <br />
-            PROFILE
+            PEMAIN
           </h1>
 
         </div>
@@ -104,34 +102,34 @@ function Profile() {
             </h2>
 
             <p className="text-center text-cyan-400 mb-10">
-              {player.game} Player
+              {player.game}
             </p>
 
             <div className="space-y-5">
 
               <div className="flex justify-between">
-                <span>Global Rank</span>
+                <span>Peringkat Global</span>
                 <span>#{player.rank}</span>
               </div>
 
               <div className="flex justify-between">
-                <span>Trophy</span>
-                <span>{player.trophy}</span>
+                <span>Best Score</span>
+                <span>{player.bestScore}</span>
               </div>
 
               <div className="flex justify-between">
-                <span>Wins</span>
-                <span>{player.wins}</span>
+                <span>Total Score</span>
+                <span>{player.totalScore}</span>
               </div>
 
               <div className="flex justify-between">
-                <span>Losses</span>
-                <span>{player.losses}</span>
+                <span>Total Kill</span>
+                <span>{player.totalKills}</span>
               </div>
 
               <div className="flex justify-between">
-                <span>Country</span>
-                <span>{player.country}</span>
+                <span>Total Match</span>
+                <span>{player.totalMatches}</span>
               </div>
 
             </div>
@@ -156,7 +154,7 @@ function Profile() {
           >
 
             <h2 className="text-4xl font-black mb-10">
-              MATCH HISTORY
+              RINGKASAN PERFORMA
             </h2>
 
             <div className="space-y-5">
