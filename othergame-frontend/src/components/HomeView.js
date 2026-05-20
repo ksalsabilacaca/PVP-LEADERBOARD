@@ -8,6 +8,11 @@ export default function HomeView({
   fetchLeaderboard,
   onStartMatchmaking,
 }) {
+  const safeLeaderboard = Array.isArray(leaderboard) ? leaderboard : [];
+  const resolveName = (item) =>
+    String(item?.username || item?.value || item?.playerName || "").trim();
+  const normalizedUsername = username.trim().toLowerCase();
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
       {/* Find Match Panel */}
@@ -67,7 +72,7 @@ export default function HomeView({
         </div>
 
         <div className="overflow-y-auto max-h-[350px] pr-2 custom-scrollbar">
-          {loadingLeaderboard && leaderboard.length === 0 ? (
+          {loadingLeaderboard && safeLeaderboard.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-gray-500">
               <svg className="w-8 h-8 animate-spin mb-3 text-indigo-500" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -75,15 +80,18 @@ export default function HomeView({
               </svg>
               <span>Loading rankings...</span>
             </div>
-          ) : leaderboard.length === 0 ? (
+          ) : safeLeaderboard.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <p className="text-lg">No matches recorded yet.</p>
               <p className="text-sm mt-1">Be the first to secure a spot on the board!</p>
             </div>
           ) : (
             <div className="flex flex-col gap-2">
-              {leaderboard.map((item, index) => {
+              {safeLeaderboard.map((item, index) => {
                 const isTop3 = index < 3;
+                const displayName = resolveName(item) || "Unknown Player";
+                const isCurrentUser =
+                  displayName.toLowerCase() === normalizedUsername && normalizedUsername.length > 0;
                 const badgeColors = [
                   "bg-gradient-to-r from-amber-400 to-yellow-500 text-gray-950 font-black", // Gold
                   "bg-gradient-to-r from-slate-300 to-gray-400 text-gray-950 font-black",  // Silver
@@ -92,9 +100,9 @@ export default function HomeView({
 
                 return (
                   <div
-                    key={item.value + index}
+                    key={`${displayName}-${index}`}
                     className={`flex items-center justify-between p-4 rounded-2xl transition border ${
-                      item.value.toLowerCase() === username.trim().toLowerCase()
+                      isCurrentUser
                         ? "bg-indigo-950/40 border-indigo-500/50"
                         : "bg-gray-950/30 border-gray-800/40 hover:border-gray-700/60"
                     }`}
@@ -106,15 +114,15 @@ export default function HomeView({
                         {index + 1}
                       </span>
                       <span className={`font-semibold ${
-                        item.value.toLowerCase() === username.trim().toLowerCase()
+                        isCurrentUser
                           ? "text-indigo-400"
                           : "text-gray-200"
                       }`}>
-                        {item.value}
+                        {displayName}
                       </span>
                     </div>
                     <span className="font-mono font-bold text-indigo-300">
-                      {item.score} pts
+                      {Number(item.score) || 0} pts
                     </span>
                   </div>
                 );

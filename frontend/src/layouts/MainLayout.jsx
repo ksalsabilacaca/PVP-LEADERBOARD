@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 
+const RPS_PLAY_URL = import.meta.env.VITE_RPS_PLAY_URL || "http://localhost:3001";
+
 function MainLayout({ children }) {
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#050816] text-white">
@@ -32,6 +34,20 @@ function MainLayout({ children }) {
             className="hover:text-cyan-400 transition"
           >
             LEADERBOARD
+          </Link>
+
+          <a
+            href={RPS_PLAY_URL}
+            className="hover:text-cyan-400 transition"
+          >
+            PLAY ROCK PAPER SCISSORS
+          </a>
+
+          <Link
+            to="/play-zombie-rush"
+            className="hover:text-cyan-400 transition"
+          >
+            PLAY ZOMBIE RUSH
           </Link>
 
         </div>

@@ -1,3 +1,4 @@
+const { performance } = require('node:perf_hooks');
 const { zombieRushRedis } = require('../database/database');
 const realtime = require('../realtime');
 
@@ -50,6 +51,7 @@ const recordMatch = async (req, res) => {
     const payload = {
       uuid,
       playerName,
+      username: playerName,
       bestScore: String(bestScore),
       totalScore: String(totalScore),
       totalKills: String(totalKills),
@@ -73,6 +75,7 @@ const recordMatch = async (req, res) => {
       data: {
         uuid,
         playerName,
+        username: playerName,
         bestScore,
         totalScore,
         totalKills,
@@ -93,28 +96,38 @@ const getLeaderboard = async (req, res, type) => {
   const limit = Math.max(1, Math.min(100, parseNumber(req.query.limit, 10)));
   const key = type === 'total' ? totalKey() : bestKey();
   const scoreField = type === 'total' ? 'totalScore' : 'bestScore';
+  const totalStart = performance.now();
+  const queryStart = performance.now();
 
   try {
     const uuids = await zombieRushRedis.zRange(key, 0, limit - 1, { REV: true });
-    if (!uuids.length) {
-      return res.status(200).json([]);
-    }
-
     const pipeline = zombieRushRedis.multi();
     uuids.forEach((uuid) => pipeline.hGetAll(playerKey(uuid)));
-    const results = await pipeline.exec();
+    const results = uuids.length ? await pipeline.exec() : [];
+    const queryEnd = performance.now();
+    const processStart = performance.now();
 
     const entries = uuids.map((uuid, index) => {
       const data = results[index] || {};
+      const name = data.playerName || data.username || uuid;
       return {
         rank: index + 1,
         uuid,
-        playerName: data.playerName || uuid,
+        playerName: name,
+        username: name,
         score: parseNumber(data[scoreField])
       };
     });
 
-    return res.status(200).json(entries);
+    const processEnd = performance.now();
+    const metrics = {
+      queryMs: Number((queryEnd - queryStart).toFixed(2)),
+      processMs: Number((processEnd - processStart).toFixed(2)),
+      totalMs: Number((processEnd - totalStart).toFixed(2)),
+      source: 'Redis Sorted Set + Redis Player Data'
+    };
+
+    return res.status(200).json({ data: entries, metrics });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Gagal mengambil leaderboard dari Redis.' });

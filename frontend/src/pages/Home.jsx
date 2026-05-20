@@ -48,7 +48,7 @@ function Home() {
           <h1 className="text-7xl font-black leading-tight mb-6">
             LEADERBOARD
             <br />
-            ZOMBIERUSH
+            ZOMBIE RUSH
             <br />
             MINI PROJECT SBD
           </h1>

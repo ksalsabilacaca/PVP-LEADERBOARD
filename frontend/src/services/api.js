@@ -12,19 +12,26 @@ const mapLeaderboard = (entries, gameLabel) =>
     entries.map((entry, index) => ({
         rank: entry.rank ?? index + 1,
         uuid: entry.uuid,
-        username: entry.playerName || entry.uuid,
+        username: entry.playerName || entry.username || entry.uuid,
         game: gameLabel,
         trophy: Number(entry.score) || 0,
     }));
 
+const unwrapLeaderboardResponse = (payload) => {
+    if (Array.isArray(payload)) {
+        return payload;
+    }
+    return Array.isArray(payload?.data) ? payload.data : [];
+};
+
 const getLeaderboardBest = async (limit = 50) => {
     const data = await fetchJson(`${BASE_URL}/api/zombierush/leaderboard/best?limit=${limit}`);
-    return Array.isArray(data) ? data : [];
+    return unwrapLeaderboardResponse(data);
 };
 
 const getLeaderboardTotal = async (limit = 50) => {
     const data = await fetchJson(`${BASE_URL}/api/zombierush/leaderboard/total?limit=${limit}`);
-    return Array.isArray(data) ? data : [];
+    return unwrapLeaderboardResponse(data);
 };
 
 export async function getStats() {
@@ -32,7 +39,7 @@ export async function getStats() {
         const best = await getLeaderboardBest(50);
         const top = best[0];
         return {
-            topPlayer: top ? top.playerName : "Belum ada data",
+            topPlayer: top ? top.playerName || top.username : "Belum ada data",
             topTrophy: top ? top.score : 0,
             liveMatches: 0,
             totalPlayers: best.length,
@@ -50,14 +57,14 @@ export async function getStats() {
 
 export async function getLeaderboard() {
     const data = await getLeaderboardBest(50);
-    return mapLeaderboard(data, "ZombieRush");
+    return mapLeaderboard(data, "Zombie Rush");
 }
 
 export async function getPlayers() {
     const data = await getLeaderboardBest(50);
     return data.map((entry) => ({
         uuid: entry.uuid,
-        username: entry.playerName || entry.uuid
+        username: entry.playerName || entry.username || entry.uuid
     }));
 }
 
@@ -78,8 +85,8 @@ export async function getPlayerProfile(uuid) {
 
     return {
         uuid: player.uuid,
-        username: player.playerName || player.uuid,
-        game: "ZombieRush",
+        username: player.playerName || player.username || player.uuid,
+        game: "Zombie Rush",
         rank,
         bestScore: player.bestScore,
         totalScore: player.totalScore,
@@ -99,20 +106,13 @@ export async function getPlayerProfile(uuid) {
 
 export async function getMinecraftLeaderboard() {
     const data = await getLeaderboardBest(50);
-    return mapLeaderboard(data, "ZombieRush");
+    return mapLeaderboard(data, "Zombie Rush");
 }
 
 export async function getRobloxLeaderboard() {
-  const response = await fetch(`${BASE_URL}/othergame/scores`);
-  if (!response.ok) throw new Error("Failed to fetch Roblox leaderboard");
-  const data = await response.json();
-  // Map backend format (value/score) to frontend format (username/trophy)
-  return data.map((item, index) => ({
-    rank: index + 1,
-    username: item.value,
-    game: "Roblox",
-    trophy: item.score,
-  }));
+    const response = await fetch(`${BASE_URL}/othergame/scores`);
+    if (!response.ok) throw new Error("Gagal mengambil leaderboard Rock Paper Scissors");
+    return response.json();
 }
 
 export async function simulateMatch(matchData) {

@@ -7,6 +7,27 @@ import ResultView from "../components/ResultView";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000";
 
+const normalizeLeaderboardResponse = (result) => {
+  if (Array.isArray(result)) {
+    return { data: result, metrics: null };
+  }
+
+  if (!result || typeof result !== "object") {
+    return { data: [], metrics: null };
+  }
+
+  const data = Array.isArray(result.data)
+    ? result.data
+    : Array.isArray(result.value)
+    ? result.value
+    : [];
+
+  return { data, metrics: result.metrics ?? null };
+};
+
+const resolveLeaderboardName = (item) =>
+  String(item?.username || item?.value || item?.playerName || "").trim();
+
 export default function Home() {
   // Game state
   const [username, setUsername] = useState("");
@@ -29,6 +50,7 @@ export default function Home() {
   // Scoring & backend sync state
   const [leaderboard, setLeaderboard] = useState([]);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
+  const [leaderboardMetrics, setLeaderboardMetrics] = useState(null);
   const [submittingScore, setSubmittingScore] = useState(false);
   const [scoreStatus, setScoreStatus] = useState("");
   const [pointsGained, setPointsGained] = useState(0);
@@ -42,8 +64,12 @@ export default function Home() {
     try {
       const res = await fetch(`${BACKEND_URL}/api/othergame/scores`);
       if (!res.ok) throw new Error("Failed to fetch leaderboard scores.");
-      const data = await res.json();
+      const result = await res.json();
+      const { data, metrics } = normalizeLeaderboardResponse(result);
       setLeaderboard(data);
+      if (metrics) {
+        setLeaderboardMetrics(metrics);
+      }
     } catch (err) {
       console.error(err);
       setError("Unable to connect to the backend server. Make sure the backend is running on port 3000.");
@@ -72,7 +98,7 @@ export default function Home() {
       }
     };
     eventSource.onerror = (err) => {
-      console.error("SSE connection error in othergame:", err);
+      console.warn("SSE connection error in othergame:", err);
     };
     return () => {
       eventSource.close();
@@ -181,10 +207,12 @@ export default function Home() {
 
     try {
       // Find current score from existing leaderboard
-      const existingUser = leaderboard.find(
-        (item) => item.value.toLowerCase() === username.trim().toLowerCase()
+      const safeLeaderboard = Array.isArray(leaderboard) ? leaderboard : [];
+      const targetName = username.trim().toLowerCase();
+      const existingUser = safeLeaderboard.find((item) =>
+        resolveLeaderboardName(item).toLowerCase() === targetName
       );
-      const currentScore = existingUser ? existingUser.score : 0;
+      const currentScore = existingUser ? Number(existingUser.score) || 0 : 0;
       const finalAccumulatedScore = currentScore + points;
       setFinalScore(finalAccumulatedScore);
 

@@ -4,10 +4,11 @@ import { getRobloxLeaderboard } from "../services/api";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 const EMPTY_TIMING = { fetchMs: 0, processMs: 0, totalMs: 0 };
+const EMPTY_BACKEND_METRICS = { queryMs: null, processMs: null, totalMs: null, source: "" };
 
 function resolvePlayerName(player, index) {
   const uuid = player.uuid || player.id || "";
-  const rawName = player.playerName || player.username || player.name || "";
+  const rawName = player.playerName || player.username || player.name || player.value || "";
 
   if (rawName && rawName !== uuid) {
     return rawName;
@@ -28,7 +29,7 @@ function normalizeZombieRush(data) {
     uuid: player.uuid || "",
     username: resolvePlayerName(player, index),
     score: Number(player.score ?? 0),
-    game: "ZombieRush",
+    game: "Zombie Rush",
   }));
 }
 
@@ -53,14 +54,27 @@ function buildTiming(fetchStart, fetchEnd, processEnd) {
 }
 
 function formatMs(value) {
+  if (typeof value !== "number" || Number.isNaN(value)) {
+    return "Belum tersedia";
+  }
   return `${value.toFixed(2)} ms`;
+}
+
+function unwrapResponse(response) {
+  if (Array.isArray(response)) {
+    return { data: response, metrics: null };
+  }
+  return {
+    data: Array.isArray(response?.data) ? response.data : [],
+    metrics: response?.metrics || null
+  };
 }
 
 async function getZombieRushLeaderboard(type) {
   const response = await fetch(`${API_BASE_URL}/api/zombierush/leaderboard/${type}`);
 
   if (!response.ok) {
-    throw new Error(`Gagal mengambil leaderboard ZombieRush ${type}.`);
+    throw new Error(`Gagal mengambil leaderboard Zombie Rush ${type}.`);
   }
 
   return response.json();
@@ -71,6 +85,10 @@ function Leaderboard() {
   const [zombieRushPlayers, setZombieRushPlayers] = useState([]);
   const [rpsPlayers, setRpsPlayers] = useState([]);
   const [timings, setTimings] = useState({ zombierush: EMPTY_TIMING, rps: EMPTY_TIMING });
+  const [backendMetrics, setBackendMetrics] = useState({
+    zombierush: EMPTY_BACKEND_METRICS,
+    rps: EMPTY_BACKEND_METRICS
+  });
   const [activeTab, setActiveTab] = useState("zombierush");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -78,24 +96,24 @@ function Leaderboard() {
 
   const modeLabel =
     activeTab === "zombierush"
-      ? "BEST ZOMBIERUSH"
+      ? "BEST ZOMBIE RUSH"
       : activeTab === "rps"
       ? "BEST ROCK PAPER SCISSORS"
       : "ALL GAME";
 
   const headerTitle =
     activeTab === "zombierush"
-      ? ["LEADERBOARD", "ZOMBIERUSH"]
+      ? ["LEADERBOARD", "ZOMBIE RUSH"]
       : activeTab === "rps"
       ? ["LEADERBOARD", "ROCK PAPER SCISSORS"]
       : ["LEADERBOARD", "ALL GAME"];
 
   const headerSubtitle =
     activeTab === "zombierush"
-      ? "Peringkat berdasarkan skor tertinggi pemain ZombieRush."
+      ? "Peringkat berdasarkan skor tertinggi pemain Zombie Rush."
       : activeTab === "rps"
-      ? "Peringkat berdasarkan skor terbaik pemain Rock Paper Scissors."
-      : "Perbandingan leaderboard dan waktu proses data dari ZombieRush dan Rock Paper Scissors.";
+      ? "Peringkat berdasarkan total skor terbanyak pemain Rock Paper Scissors."
+      : "Perbandingan leaderboard dan waktu proses data dari Zombie Rush dan Rock Paper Scissors.";
 
   // Koneksi SSE realtime dari backend teman.
   // Jika ada update score, frontend akan refresh data.
@@ -172,26 +190,36 @@ function Leaderboard() {
 
   async function fetchZombieRushBest() {
     const fetchStart = performance.now();
-    const data = await getZombieRushLeaderboard("best");
+    const response = await getZombieRushLeaderboard("best");
     const fetchEnd = performance.now();
+    const { data, metrics } = unwrapResponse(response);
     const normalized = normalizeZombieRush(data);
     const processEnd = performance.now();
     const timing = buildTiming(fetchStart, fetchEnd, processEnd);
 
     setTimings((prev) => ({ ...prev, zombierush: timing }));
+    setBackendMetrics((prev) => ({
+      ...prev,
+      zombierush: metrics || EMPTY_BACKEND_METRICS
+    }));
 
     return { data: normalized, timing };
   }
 
   async function fetchRpsBest() {
     const fetchStart = performance.now();
-    const data = await getRobloxLeaderboard();
+    const response = await getRobloxLeaderboard();
     const fetchEnd = performance.now();
+    const { data, metrics } = unwrapResponse(response);
     const normalized = normalizeRps(data);
     const processEnd = performance.now();
     const timing = buildTiming(fetchStart, fetchEnd, processEnd);
 
     setTimings((prev) => ({ ...prev, rps: timing }));
+    setBackendMetrics((prev) => ({
+      ...prev,
+      rps: metrics || EMPTY_BACKEND_METRICS
+    }));
 
     return { data: normalized, timing };
   }
@@ -207,6 +235,7 @@ function Leaderboard() {
       : zombieRushPlayers.length + rpsPlayers.length;
   const currentTiming = activeTab === "rps" ? timings.rps : timings.zombierush;
   const totalDiff = Math.abs(timings.zombierush.totalMs - timings.rps.totalMs);
+  const currentBackend = activeTab === "rps" ? backendMetrics.rps : backendMetrics.zombierush;
 
   function tabClass(tabName, color = "cyan") {
     const active = activeTab === tabName;
@@ -275,7 +304,7 @@ function Leaderboard() {
             }}
           >
             <p className="text-yellow-400 text-lg mb-3">
-              {activeTab === "all" ? "TOP ZOMBIERUSH" : "PEMAIN TERATAS"}
+              {activeTab === "all" ? "TOP ZOMBIE RUSH" : "PEMAIN TERATAS"}
             </p>
 
             <h2 className="text-4xl font-black mb-2 break-words">
@@ -327,76 +356,164 @@ function Leaderboard() {
         </div>
 
         {activeTab !== "all" && (
-          <div className="grid grid-cols-3 gap-6 mb-10">
-            <div
-              className="
-                relative
-                overflow-hidden
-                bg-white/5
-                backdrop-blur-xl
-                border
-                border-cyan-400/20
-                p-6
-                shadow-[0_0_40px_rgba(34,211,238,0.15)]
-              "
-              style={{
-                clipPath:
-                  "polygon(0 0, 92% 0, 100% 15%, 100% 100%, 8% 100%, 0 85%)",
-              }}
-            >
-              <p className="text-cyan-400 text-sm mb-2">WAKTU AMBIL DATA</p>
-              <p className="text-2xl font-black">{formatMs(currentTiming.fetchMs)}</p>
+          <div className="mb-10">
+            <p className="text-cyan-400 tracking-[6px] mb-4">FRONTEND METRICS</p>
+            <div className="grid grid-cols-3 gap-6 mb-8">
+              <div
+                className="
+                  relative
+                  overflow-hidden
+                  bg-white/5
+                  backdrop-blur-xl
+                  border
+                  border-cyan-400/20
+                  p-6
+                  shadow-[0_0_40px_rgba(34,211,238,0.15)]
+                "
+                style={{
+                  clipPath:
+                    "polygon(0 0, 92% 0, 100% 15%, 100% 100%, 8% 100%, 0 85%)",
+                }}
+              >
+                <p className="text-cyan-400 text-sm mb-2">FRONTEND FETCH</p>
+                <p className="text-2xl font-black">{formatMs(currentTiming.fetchMs)}</p>
+              </div>
+
+              <div
+                className="
+                  relative
+                  overflow-hidden
+                  bg-white/5
+                  backdrop-blur-xl
+                  border
+                  border-cyan-400/20
+                  p-6
+                  shadow-[0_0_40px_rgba(34,211,238,0.15)]
+                "
+                style={{
+                  clipPath:
+                    "polygon(0 0, 92% 0, 100% 15%, 100% 100%, 8% 100%, 0 85%)",
+                }}
+              >
+                <p className="text-cyan-400 text-sm mb-2">FRONTEND PROCESS</p>
+                <p className="text-2xl font-black">{formatMs(currentTiming.processMs)}</p>
+              </div>
+
+              <div
+                className="
+                  relative
+                  overflow-hidden
+                  bg-white/5
+                  backdrop-blur-xl
+                  border
+                  border-cyan-400/20
+                  p-6
+                  shadow-[0_0_40px_rgba(34,211,238,0.15)]
+                "
+                style={{
+                  clipPath:
+                    "polygon(0 0, 92% 0, 100% 15%, 100% 100%, 8% 100%, 0 85%)",
+                }}
+              >
+                <p className="text-cyan-400 text-sm mb-2">FRONTEND TOTAL</p>
+                <p className="text-2xl font-black">{formatMs(currentTiming.totalMs)}</p>
+              </div>
             </div>
 
-            <div
-              className="
-                relative
-                overflow-hidden
-                bg-white/5
-                backdrop-blur-xl
-                border
-                border-cyan-400/20
-                p-6
-                shadow-[0_0_40px_rgba(34,211,238,0.15)]
-              "
-              style={{
-                clipPath:
-                  "polygon(0 0, 92% 0, 100% 15%, 100% 100%, 8% 100%, 0 85%)",
-              }}
-            >
-              <p className="text-cyan-400 text-sm mb-2">WAKTU OLAH DATA</p>
-              <p className="text-2xl font-black">{formatMs(currentTiming.processMs)}</p>
-            </div>
+            <p className="text-cyan-400 tracking-[6px] mb-4">BACKEND METRICS</p>
+            <div className="grid grid-cols-4 gap-6">
+              <div
+                className="
+                  relative
+                  overflow-hidden
+                  bg-white/5
+                  backdrop-blur-xl
+                  border
+                  border-cyan-400/20
+                  p-6
+                  shadow-[0_0_40px_rgba(34,211,238,0.15)]
+                "
+                style={{
+                  clipPath:
+                    "polygon(0 0, 92% 0, 100% 15%, 100% 100%, 8% 100%, 0 85%)",
+                }}
+              >
+                <p className="text-cyan-400 text-sm mb-2">BACKEND QUERY</p>
+                <p className="text-2xl font-black">{formatMs(currentBackend?.queryMs)}</p>
+              </div>
 
-            <div
-              className="
-                relative
-                overflow-hidden
-                bg-white/5
-                backdrop-blur-xl
-                border
-                border-cyan-400/20
-                p-6
-                shadow-[0_0_40px_rgba(34,211,238,0.15)]
-              "
-              style={{
-                clipPath:
-                  "polygon(0 0, 92% 0, 100% 15%, 100% 100%, 8% 100%, 0 85%)",
-              }}
-            >
-              <p className="text-cyan-400 text-sm mb-2">TOTAL WAKTU PROSES</p>
-              <p className="text-2xl font-black">{formatMs(currentTiming.totalMs)}</p>
+              <div
+                className="
+                  relative
+                  overflow-hidden
+                  bg-white/5
+                  backdrop-blur-xl
+                  border
+                  border-cyan-400/20
+                  p-6
+                  shadow-[0_0_40px_rgba(34,211,238,0.15)]
+                "
+                style={{
+                  clipPath:
+                    "polygon(0 0, 92% 0, 100% 15%, 100% 100%, 8% 100%, 0 85%)",
+                }}
+              >
+                <p className="text-cyan-400 text-sm mb-2">BACKEND PROCESS</p>
+                <p className="text-2xl font-black">{formatMs(currentBackend?.processMs)}</p>
+              </div>
+
+              <div
+                className="
+                  relative
+                  overflow-hidden
+                  bg-white/5
+                  backdrop-blur-xl
+                  border
+                  border-cyan-400/20
+                  p-6
+                  shadow-[0_0_40px_rgba(34,211,238,0.15)]
+                "
+                style={{
+                  clipPath:
+                    "polygon(0 0, 92% 0, 100% 15%, 100% 100%, 8% 100%, 0 85%)",
+                }}
+              >
+                <p className="text-cyan-400 text-sm mb-2">BACKEND TOTAL</p>
+                <p className="text-2xl font-black">{formatMs(currentBackend?.totalMs)}</p>
+              </div>
+
+              <div
+                className="
+                  relative
+                  overflow-hidden
+                  bg-white/5
+                  backdrop-blur-xl
+                  border
+                  border-cyan-400/20
+                  p-6
+                  shadow-[0_0_40px_rgba(34,211,238,0.15)]
+                "
+                style={{
+                  clipPath:
+                    "polygon(0 0, 92% 0, 100% 15%, 100% 100%, 8% 100%, 0 85%)",
+                }}
+              >
+                <p className="text-cyan-400 text-sm mb-2">SOURCE</p>
+                <p className="text-lg font-black">
+                  {currentBackend?.source || "Belum tersedia"}
+                </p>
+              </div>
             </div>
           </div>
         )}
 
         {/* FILTER BUTTONS */}
         <div className="flex flex-wrap gap-5 mb-10">
-          <button
-            onClick={() => loadLeaderboard("zombierush")}
-            className={tabClass("zombierush", "green")}
-          >
-            BEST ZOMBIERUSH
+            <button
+              onClick={() => loadLeaderboard("zombierush")}
+              className={tabClass("zombierush", "green")}
+            >
+              BEST ZOMBIE RUSH
           </button>
 
           <button
@@ -449,19 +566,31 @@ function Leaderboard() {
               <p className="text-cyan-400 text-lg font-bold mb-4">PERBANDINGAN WAKTU PROSES</p>
               <div className="grid grid-cols-2 gap-8">
                 <div>
-                  <p className="text-green-300 font-semibold mb-3">ZombieRush</p>
+                  <p className="text-green-300 font-semibold mb-3">Zombie Rush</p>
                   <div className="space-y-2 text-gray-200">
-                    <div>Fetch: {formatMs(timings.zombierush.fetchMs)}</div>
-                    <div>Process: {formatMs(timings.zombierush.processMs)}</div>
-                    <div>Total: {formatMs(timings.zombierush.totalMs)}</div>
+                    <p className="text-xs uppercase text-green-200">Frontend Metrics</p>
+                    <div>Frontend Fetch: {formatMs(timings.zombierush.fetchMs)}</div>
+                    <div>Frontend Process: {formatMs(timings.zombierush.processMs)}</div>
+                    <div>Frontend Total: {formatMs(timings.zombierush.totalMs)}</div>
+                    <p className="text-xs uppercase text-green-200 mt-3">Backend Metrics</p>
+                    <div>Backend Query: {formatMs(backendMetrics.zombierush?.queryMs)}</div>
+                    <div>Backend Process: {formatMs(backendMetrics.zombierush?.processMs)}</div>
+                    <div>Backend Total: {formatMs(backendMetrics.zombierush?.totalMs)}</div>
+                    <div>Source: {backendMetrics.zombierush?.source || "Belum tersedia"}</div>
                   </div>
                 </div>
                 <div>
                   <p className="text-cyan-300 font-semibold mb-3">Rock Paper Scissors</p>
                   <div className="space-y-2 text-gray-200">
-                    <div>Fetch: {formatMs(timings.rps.fetchMs)}</div>
-                    <div>Process: {formatMs(timings.rps.processMs)}</div>
-                    <div>Total: {formatMs(timings.rps.totalMs)}</div>
+                    <p className="text-xs uppercase text-cyan-200">Frontend Metrics</p>
+                    <div>Frontend Fetch: {formatMs(timings.rps.fetchMs)}</div>
+                    <div>Frontend Process: {formatMs(timings.rps.processMs)}</div>
+                    <div>Frontend Total: {formatMs(timings.rps.totalMs)}</div>
+                    <p className="text-xs uppercase text-cyan-200 mt-3">Backend Metrics</p>
+                    <div>Backend Query: {formatMs(backendMetrics.rps?.queryMs)}</div>
+                    <div>Backend Process: {formatMs(backendMetrics.rps?.processMs)}</div>
+                    <div>Backend Total: {formatMs(backendMetrics.rps?.totalMs)}</div>
+                    <div>Source: {backendMetrics.rps?.source || "Belum tersedia"}</div>
                   </div>
                 </div>
               </div>
@@ -488,15 +617,15 @@ function Leaderboard() {
 
             <div className="grid grid-cols-2 gap-8">
               {renderTable(
-                "BEST ZOMBIERUSH",
-                "Peringkat berdasarkan skor tertinggi pemain ZombieRush.",
+                "BEST ZOMBIE RUSH",
+                "Peringkat berdasarkan skor tertinggi pemain Zombie Rush.",
                 zombieRushPlayers,
                 loading,
                 errorMessage
               )}
               {renderTable(
                 "BEST ROCK PAPER SCISSORS",
-                "Peringkat berdasarkan skor terbaik pemain Rock Paper Scissors.",
+                "Peringkat berdasarkan total skor terbanyak pemain Rock Paper Scissors.",
                 rpsPlayers,
                 loading,
                 errorMessage
@@ -505,10 +634,10 @@ function Leaderboard() {
           </>
         ) : (
           renderTable(
-            activeTab === "zombierush" ? "BEST ZOMBIERUSH" : "BEST ROCK PAPER SCISSORS",
+            activeTab === "zombierush" ? "BEST ZOMBIE RUSH" : "BEST ROCK PAPER SCISSORS",
             activeTab === "zombierush"
-              ? "Peringkat berdasarkan skor tertinggi pemain ZombieRush."
-              : "Peringkat berdasarkan skor terbaik pemain Rock Paper Scissors.",
+              ? "Peringkat berdasarkan skor tertinggi pemain Zombie Rush."
+              : "Peringkat berdasarkan total skor terbanyak pemain Rock Paper Scissors.",
             players,
             loading,
             errorMessage
@@ -604,7 +733,7 @@ function renderTable(title, subtitle, data, loading, errorMessage) {
                     text-sm
                     font-semibold
                     ${
-                      player.game === "ZombieRush"
+                      player.game === "Zombie Rush"
                         ? "bg-green-500/20 text-green-300"
                         : player.game === "Rock Paper Scissors"
                         ? "bg-cyan-500/20 text-cyan-300"
