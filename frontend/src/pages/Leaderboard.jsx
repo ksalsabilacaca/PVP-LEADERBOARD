@@ -567,7 +567,9 @@ function Leaderboard() {
                   "polygon(0 0, 98% 0, 100% 5%, 100% 100%, 2% 100%, 0 95%)",
               }}
             >
-              <p className="text-cyan-400 text-lg font-bold mb-4">PERBANDINGAN WAKTU PROSES</p>
+              <p className="text-cyan-400 text-lg font-bold mb-4 text-center w-full">
+                PERBANDINGAN WAKTU PROSES
+              </p>
               <div className="grid grid-cols-2 gap-8">
                 <div
                   className="
