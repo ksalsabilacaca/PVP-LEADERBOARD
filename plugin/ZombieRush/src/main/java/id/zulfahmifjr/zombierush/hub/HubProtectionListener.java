@@ -14,10 +14,17 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 public class HubProtectionListener implements Listener {
     private final ZombieRushPlugin plugin;
     private final HubManager hubManager;
     private final PlacementManager placementManager;
+    private static final long MESSAGE_COOLDOWN_MS = 2000L;
+    private final Map<UUID, Long> breakMessageCooldown = new HashMap<>();
+    private final Map<UUID, Long> placeMessageCooldown = new HashMap<>();
 
     public HubProtectionListener(ZombieRushPlugin plugin, HubManager hubManager, PlacementManager placementManager) {
         this.plugin = plugin;
@@ -32,13 +39,21 @@ public class HubProtectionListener implements Listener {
         Player player = event.getPlayer();
         if (!hubManager.isHubWorld(player.getWorld()))
             return;
-        if (player.getGameMode() == GameMode.CREATIVE)
-            return;
         if (placementManager != null && placementManager.has(player.getUniqueId()))
             return;
 
+        if (player.getGameMode() == GameMode.CREATIVE || player.hasPermission("zombierush.admin")) {
+            if (shouldSend(breakMessageCooldown, player.getUniqueId())) {
+                Msg.info(player, plugin.getConfig(),
+                        "Mode kreatif terdeteksi. Anda dapat menghancurkan blok di lobby sebagai admin.");
+            }
+            return;
+        }
+
         event.setCancelled(true);
-        Msg.warn(player, plugin.getConfig(), "Anda tidak dapat menghancurkan blok di area lobby.");
+        if (shouldSend(breakMessageCooldown, player.getUniqueId())) {
+            Msg.warn(player, plugin.getConfig(), "Anda tidak dapat menghancurkan blok di area lobby.");
+        }
     }
 
     @EventHandler
@@ -48,11 +63,21 @@ public class HubProtectionListener implements Listener {
         Player player = event.getPlayer();
         if (!hubManager.isHubWorld(player.getWorld()))
             return;
-        if (player.getGameMode() == GameMode.CREATIVE)
+        if (placementManager != null && placementManager.has(player.getUniqueId()))
             return;
 
+        if (player.getGameMode() == GameMode.CREATIVE || player.hasPermission("zombierush.admin")) {
+            if (shouldSend(placeMessageCooldown, player.getUniqueId())) {
+                Msg.info(player, plugin.getConfig(),
+                        "Mode kreatif terdeteksi. Anda dapat menempatkan blok di lobby sebagai admin.");
+            }
+            return;
+        }
+
         event.setCancelled(true);
-        Msg.warn(player, plugin.getConfig(), "Anda tidak dapat menempatkan blok di area lobby.");
+        if (shouldSend(placeMessageCooldown, player.getUniqueId())) {
+            Msg.warn(player, plugin.getConfig(), "Anda tidak dapat menempatkan blok di area lobby.");
+        }
     }
 
     @EventHandler
@@ -106,5 +131,15 @@ public class HubProtectionListener implements Listener {
         event.setCancelled(true);
         event.setFoodLevel(20);
         player.setSaturation(20f);
+    }
+
+    private boolean shouldSend(Map<UUID, Long> cooldowns, UUID uuid) {
+        long now = System.currentTimeMillis();
+        Long last = cooldowns.get(uuid);
+        if (last != null && now - last < MESSAGE_COOLDOWN_MS) {
+            return false;
+        }
+        cooldowns.put(uuid, now);
+        return true;
     }
 }
