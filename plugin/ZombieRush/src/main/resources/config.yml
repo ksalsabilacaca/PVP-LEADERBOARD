@@ -56,6 +56,13 @@ redis:
   timeout-ms: 2000
   key-prefix: "zombierush"
 
+integration:
+  zombierush-api:
+    enabled: false
+    base-url: "http://localhost:3000"
+    api-key: ""
+    timeout-ms: 5000
+
 npc:
   enabled: false
   world: "world"
