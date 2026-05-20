@@ -1,37 +1,33 @@
-const { redisClient } = require('../database/database');
+const OthergameScore = require('../models/othergame.model');
 
 const saveScore = async (req, res) => {
   const { username, score } = req.body;
 
   if (!username || typeof score !== 'number') {
-    return res.status(400).json({ error: 'Requires username and score' });
+    return res.status(400).json({ error: 'Memerlukan username dan score (number).' });
   }
 
   try {
-    // Upstash expects { score, member }
-    await redisClient.zadd('leaderboard:othergame', { score: score, member: username });
-    res.status(200).json({ message: 'Score saved successfully' });
+    await OthergameScore.findOneAndUpdate(
+      { username },
+      { score },
+      { upsert: true, new: true }
+    );
+    res.status(200).json({ message: 'Skor othergame berhasil disimpan.' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to write to database' });
+    res.status(500).json({ error: 'Gagal menyimpan skor othergame ke database.' });
   }
 };
 
 const getScores = async (req, res) => {
   try {
-    // Upstash returns a flat array: ['user1', 100, 'user2', 90]
-    const flatScores = await redisClient.zrange('leaderboard:othergame', 0, 99, { rev: true, withScores: true });
-    
-    // Map flat array to [{ value: 'user', score: 100 }]
-    const formattedScores = [];
-    for (let i = 0; i < flatScores.length; i += 2) {
-      formattedScores.push({ value: flatScores[i], score: flatScores[i + 1] });
-    }
-
+    const topScores = await OthergameScore.find().sort({ score: -1 }).limit(100);
+    const formattedScores = topScores.map((s) => ({ value: s.username, score: s.score }));
     res.status(200).json(formattedScores);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to read from database' });
+    res.status(500).json({ error: 'Gagal mengambil skor othergame dari database.' });
   }
 };
 

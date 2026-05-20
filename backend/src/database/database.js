@@ -1,24 +1,5 @@
-const { Redis } = require('@upstash/redis');
 const { createClient } = require('redis');
 const mongoose = require('mongoose');
-
-const redisClient = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
-});
-
-const connectRedis = async () => {
-    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-        console.warn("Upstash Redis belum dikonfigurasi. Endpoint othergame memakai MongoDB jika tersedia.");
-        return;
-    }
-    try {
-        await redisClient.ping();
-        console.log("Upstash Redis connected successfully");
-    } catch (err) {
-        console.error("Failed to connect to Upstash Redis", err);
-    }
-};
 
 const buildRedisClient = () => {
     if (process.env.REDIS_URL) {
@@ -54,15 +35,13 @@ const connectMongo = async () => {
     try {
         const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/pvp-leaderboard';
         await mongoose.connect(mongoUri);
-        console.log("MongoDB connected successfully");
+        console.log("MongoDB terhubung");
     } catch (err) {
-        console.error("Failed to connect to MongoDB", err);
+        console.error("Gagal terhubung ke MongoDB. Endpoint othergame tidak dapat digunakan.", err.message);
     }
 };
 
 module.exports = {
-    redisClient,
-    connectRedis,
     zombieRushRedis,
     connectZombieRushRedis,
     connectMongo

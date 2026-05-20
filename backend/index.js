@@ -2,8 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
-const { connectRedis, connectMongo, connectZombieRushRedis } = require('./src/database/database');
-const minecraftRoutes = require('./src/routes/minecraft.routes');
+const { connectMongo, connectZombieRushRedis } = require('./src/database/database');
 const othergameRoutes = require('./src/routes/othergame.routes');
 const zombierushRoutes = require('./src/routes/zombierush.routes');
 
@@ -15,9 +14,6 @@ app.use(cors());
 // Parse incoming JSON payloads
 app.use(express.json());
 
-// Connect to Redis
-connectRedis();
-
 // Connect to MongoDB
 connectMongo();
 
@@ -26,7 +22,6 @@ connectZombieRushRedis();
 
 // Routes
 // Using different endpoints as required
-app.use('/api/minecraft/scores', minecraftRoutes);
 app.use('/api/othergame/scores', othergameRoutes);
 app.use('/api/zombierush', zombierushRoutes);
 

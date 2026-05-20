@@ -25,13 +25,15 @@ const requireApiKey = (req, res) => {
 const recordMatch = async (req, res) => {
   if (!requireApiKey(req, res)) return;
 
-  const { uuid, playerName, score, kills, playedAt } = req.body;
+  const { uuid, playerName, score, kills, durationSeconds, endReason, playedAt } = req.body;
   const scoreNumber = parseNumber(score, NaN);
   const killsNumber = parseNumber(kills, NaN);
+  const durationNumber = parseNumber(durationSeconds, NaN);
 
-  if (!uuid || !playerName || !Number.isFinite(scoreNumber) || !Number.isFinite(killsNumber)) {
+  if (!uuid || !playerName || !Number.isFinite(scoreNumber) || !Number.isFinite(killsNumber)
+      || !Number.isFinite(durationNumber) || !endReason) {
     return res.status(400).json({
-      error: 'Payload tidak valid. Wajib: uuid, playerName, score (number), kills (number).'
+      error: 'Payload tidak valid. Wajib: uuid, playerName, score (number), kills (number), durationSeconds (number), endReason (string).'
     });
   }
 
@@ -52,7 +54,9 @@ const recordMatch = async (req, res) => {
       totalKills: String(totalKills),
       totalMatches: String(totalMatches),
       averageScore: averageScore.toFixed(2),
-      lastPlayedAt
+      lastPlayedAt,
+      lastDurationSeconds: String(durationNumber),
+      lastEndReason: String(endReason)
     };
 
     const pipeline = zombieRushRedis.multi();
@@ -71,7 +75,9 @@ const recordMatch = async (req, res) => {
         totalKills,
         totalMatches,
         averageScore: Number(averageScore.toFixed(2)),
-        lastPlayedAt
+        lastPlayedAt,
+        lastDurationSeconds: durationNumber,
+        lastEndReason: String(endReason)
       }
     });
   } catch (error) {
@@ -135,7 +141,9 @@ const getPlayer = async (req, res) => {
       totalKills: parseNumber(data.totalKills),
       totalMatches: parseNumber(data.totalMatches),
       averageScore: parseNumber(data.averageScore),
-      lastPlayedAt: data.lastPlayedAt || null
+      lastPlayedAt: data.lastPlayedAt || null,
+      lastDurationSeconds: parseNumber(data.lastDurationSeconds),
+      lastEndReason: data.lastEndReason || null
     });
   } catch (error) {
     console.error(error);
