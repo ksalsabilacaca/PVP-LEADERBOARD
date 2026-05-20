@@ -2,6 +2,12 @@
 
 Plugin Purpur/Paper 1.21.1 untuk mode solo match-based Zombie Rush.
 
+## Prasyarat
+
+- Java 21+
+- Server Purpur/Paper 1.21.1
+- Redis (opsional, untuk leaderboard realtime)
+
 ## Konsep
 
 - Player masuk dari lobby dengan memukul/klik kanan Zombie NPC.
@@ -84,3 +90,9 @@ redis:
 ```
 
 Jika Redis tidak tersedia, plugin tetap berjalan memakai `localdata.yml`.
+
+## Integrasi Backend
+
+- Plugin menulis data leaderboard ke Redis.
+- Backend membaca Redis untuk endpoint ZombieRush.
+- Pastikan konfigurasi Redis di plugin dan backend menunjuk ke server yang sama.

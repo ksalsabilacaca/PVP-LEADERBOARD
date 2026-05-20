@@ -1,16 +1,52 @@
-# React + Vite
+# Frontend (ZombieRush UI)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Vite + React UI untuk menampilkan leaderboard ZombieRush dari backend API.
 
-Currently, two official plugins are available:
+## Prasyarat
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js 18+
+- Backend API sudah berjalan
 
-## React Compiler
+## Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm install
+```
 
-## Expanding the ESLint configuration
+Jalankan dev server:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm run dev
+```
+
+Build production:
+
+```bash
+npm run build
+```
+
+Preview build:
+
+```bash
+npm run preview
+```
+
+## Environment Variables
+
+Buat file .env (opsional) di folder frontend/.
+
+```env
+VITE_API_BASE_URL=http://localhost:3000
+```
+
+## Data Flow
+
+- UI mengambil leaderboard ZombieRush dari endpoint backend:
+	- GET /api/zombierush/leaderboard/best
+	- GET /api/zombierush/player/:uuid
+- Data disesuaikan di src/services/api.js.
+
+## Catatan
+
+- Port default Vite: 5173.
+- Pastikan backend mengizinkan CORS untuk dev.
