@@ -23,23 +23,28 @@ public class PlacementListener implements Listener {
 
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
-        if (event.getAction() != Action.LEFT_CLICK_BLOCK && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-        if (event.getClickedBlock() == null) return;
-        if (!placementManager.has(event.getPlayer().getUniqueId())) return;
+        if (event.getAction() != Action.LEFT_CLICK_BLOCK && event.getAction() != Action.RIGHT_CLICK_BLOCK)
+            return;
+        if (event.getClickedBlock() == null)
+            return;
+        if (!placementManager.has(event.getPlayer().getUniqueId()))
+            return;
         event.setCancelled(true);
         handlePlacement(event.getPlayer(), event.getClickedBlock());
     }
 
     @EventHandler
     public void onBreak(BlockBreakEvent event) {
-        if (!placementManager.has(event.getPlayer().getUniqueId())) return;
+        if (!placementManager.has(event.getPlayer().getUniqueId()))
+            return;
         event.setCancelled(true);
         handlePlacement(event.getPlayer(), event.getBlock());
     }
 
     private void handlePlacement(Player player, Block block) {
         PlacementMode mode = placementManager.get(player.getUniqueId());
-        if (mode == null) return;
+        if (mode == null)
+            return;
 
         if (!player.hasPermission("zombierush.admin")) {
             placementManager.remove(player.getUniqueId());
@@ -58,7 +63,8 @@ public class PlacementListener implements Listener {
                 plugin.saveConfig();
                 plugin.getJoinNpcManager().spawn(base);
                 Msg.success(player, plugin.getConfig(), "Lokasi NPC Join Game berhasil disimpan dan NPC telah dibuat.");
-                Msg.info(player, plugin.getConfig(), "Player dapat memukul atau klik kanan NPC untuk memulai Zombie Rush.");
+                Msg.info(player, plugin.getConfig(),
+                        "Player dapat memukul atau klik kanan NPC untuk memulai Zombie Rush.");
             }
             case LEADERBOARD -> {
                 Location loc = block.getLocation().add(0.5, 2.2, 0.5);
