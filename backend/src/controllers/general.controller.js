@@ -1,21 +1,23 @@
-const { redisClient } = require('../database/database');
-const OthergameScore = require('../models/othergame.model');
+const { zombieRushRedis: redisClient, pgPool } = require('../database/database');
 const realtime = require('../realtime');
 
 // GET /api/stats
 const getStats = async (req, res) => {
   try {
     // 1. Get Minecraft top player from Redis
-    const mcScores = await redisClient.zrange('leaderboard:minecraft', 0, 0, { rev: true, withScores: true });
+    const mcScores = await redisClient.zRangeWithScores('leaderboard:minecraft', 0, 0, { REV: true });
     let mcTopPlayer = null;
     let mcTopTrophy = 0;
-    if (mcScores && mcScores.length >= 2) {
-      mcTopPlayer = mcScores[0];
-      mcTopTrophy = parseFloat(mcScores[1]);
+    if (mcScores && mcScores.length >= 1) {
+      mcTopPlayer = mcScores[0].value;
+      mcTopTrophy = mcScores[0].score;
     }
 
-    // 2. Get Roblox top player from MongoDB
-    const robloxTopPlayerObj = await OthergameScore.findOne().sort({ score: -1 });
+    // 2. Get Roblox top player from PostgreSQL
+    const robloxTopRes = await pgPool.query(
+      `SELECT username, score FROM othergame_scores ORDER BY score DESC LIMIT 1`
+    );
+    const robloxTopPlayerObj = robloxTopRes.rows[0];
     const robloxTopPlayer = robloxTopPlayerObj ? robloxTopPlayerObj.username : null;
     const robloxTopTrophy = robloxTopPlayerObj ? robloxTopPlayerObj.score : 0;
 
@@ -35,8 +37,9 @@ const getStats = async (req, res) => {
     }
 
     // 4. Calculate total players across both databases
-    const totalMinecraft = await redisClient.zcard('leaderboard:minecraft') || 0;
-    const totalRoblox = await OthergameScore.countDocuments() || 0;
+    const totalMinecraft = await redisClient.zCard('leaderboard:minecraft') || 0;
+    const totalRobloxRes = await pgPool.query('SELECT COUNT(*) FROM othergame_scores');
+    const totalRoblox = parseInt(totalRobloxRes.rows[0].count, 10) || 0;
     const totalPlayers = totalMinecraft + totalRoblox;
 
     // 5. Simulated live matches for premium feel
@@ -58,21 +61,23 @@ const getStats = async (req, res) => {
 const getLeaderboard = async (req, res) => {
   try {
     // Fetch Minecraft from Redis
-    const mcScoresRaw = await redisClient.zrange('leaderboard:minecraft', 0, 99, { rev: true, withScores: true });
+    const mcScoresRaw = await redisClient.zRangeWithScores('leaderboard:minecraft', 0, 99, { REV: true });
     const mcList = [];
     if (mcScoresRaw) {
-      for (let i = 0; i < mcScoresRaw.length; i += 2) {
+      for (const entry of mcScoresRaw) {
         mcList.push({
-          username: mcScoresRaw[i],
+          username: entry.value,
           game: 'Minecraft',
-          trophy: parseFloat(mcScoresRaw[i + 1]),
+          trophy: entry.score,
         });
       }
     }
 
-    // Fetch Roblox from MongoDB
-    const robloxListRaw = await OthergameScore.find().sort({ score: -1 }).limit(100);
-    const robloxList = robloxListRaw.map((s) => ({
+    // Fetch Roblox from PostgreSQL
+    const robloxRes = await pgPool.query(
+      `SELECT username, score FROM othergame_scores ORDER BY score DESC LIMIT 100`
+    );
+    const robloxList = robloxRes.rows.map((s) => ({
       username: s.username,
       game: 'Rock Paper Scissors',
       trophy: s.score,
@@ -109,9 +114,9 @@ const getLeaderboard = async (req, res) => {
 // GET /api/players (Distinct username selection list for simulation dropdown)
 const getPlayers = async (req, res) => {
   try {
-    const mcPlayers = await redisClient.zrange('leaderboard:minecraft', 0, -1) || [];
-    const robloxPlayersRaw = await OthergameScore.find().select('username') || [];
-    const robloxPlayers = robloxPlayersRaw.map((p) => p.username);
+    const mcPlayers = await redisClient.zRange('leaderboard:minecraft', 0, -1) || [];
+    const robloxRes = await pgPool.query('SELECT username FROM othergame_scores');
+    const robloxPlayers = robloxRes.rows.map((p) => p.username);
 
     // Merge distinct
     const allPlayers = Array.from(new Set([...mcPlayers, ...robloxPlayers]));
@@ -138,11 +143,12 @@ const getPlayerProfile = async (req, res) => {
   const { username } = req.params;
 
   try {
-    // Try to find in Redis and Mongo
-    const mcScoreRaw = await redisClient.zscore('leaderboard:minecraft', username);
+    // Try to find in Redis and PostgreSQL
+    const mcScoreRaw = await redisClient.zScore('leaderboard:minecraft', username);
     const mcScore = mcScoreRaw !== null ? parseFloat(mcScoreRaw) : null;
 
-    const robloxScoreObj = await OthergameScore.findOne({ username });
+    const robloxRes = await pgPool.query('SELECT score FROM othergame_scores WHERE username = $1', [username]);
+    const robloxScoreObj = robloxRes.rows[0];
     const robloxScore = robloxScoreObj ? robloxScoreObj.score : null;
 
     if (mcScore === null && robloxScore === null) {
@@ -166,10 +172,11 @@ const getPlayerProfile = async (req, res) => {
     // Calculate Rank
     let rank = 1;
     if (isMC) {
-      const rankIndex = await redisClient.zrevrank('leaderboard:minecraft', username);
+      const rankIndex = await redisClient.zRevRank('leaderboard:minecraft', username);
       rank = rankIndex !== null ? rankIndex + 1 : 1;
     } else {
-      rank = (await OthergameScore.countDocuments({ score: { $gt: trophy } })) + 1;
+      const rankRes = await pgPool.query('SELECT COUNT(*) FROM othergame_scores WHERE score > $1', [trophy]);
+      rank = parseInt(rankRes.rows[0].count, 10) + 1;
     }
 
     // Dynamic stats mapping
@@ -221,17 +228,17 @@ const simulateMatch = async (req, res) => {
 
     if (game && game.toLowerCase() === "minecraft") {
       // 1. Fetch current Minecraft score from Redis
-      const scoreRaw = await redisClient.zscore('leaderboard:minecraft', player1);
+      const scoreRaw = await redisClient.zScore('leaderboard:minecraft', player1);
       const currentScore = scoreRaw !== null ? parseFloat(scoreRaw) : 1000; // start at 1000 for nice rankings
       const newScore = currentScore + pointsGained;
 
       // 2. Save new score
-      await redisClient.zadd('leaderboard:minecraft', { score: newScore, member: player1 });
+      await redisClient.zAdd('leaderboard:minecraft', [{ score: newScore, value: player1 }]);
 
       // Ensure player 2 exists in database with at least basic score if they don't yet
-      const p2ScoreRaw = await redisClient.zscore('leaderboard:minecraft', player2);
+      const p2ScoreRaw = await redisClient.zScore('leaderboard:minecraft', player2);
       if (p2ScoreRaw === null) {
-        await redisClient.zadd('leaderboard:minecraft', { score: 950, member: player2 });
+        await redisClient.zAdd('leaderboard:minecraft', [{ score: 950, value: player2 }]);
       }
 
       // Broadcast update
@@ -242,22 +249,31 @@ const simulateMatch = async (req, res) => {
         message: `${player1} defeated ${player2} (+${pointsGained} Trophy) in Minecraft PvP Arena`,
       });
     } else {
-      // 1. Fetch current Roblox score from MongoDB
-      const playerObj = await OthergameScore.findOne({ username: player1 });
+      // 1. Fetch current Roblox score from PostgreSQL
+      const playerRes = await pgPool.query('SELECT score FROM othergame_scores WHERE username = $1', [player1]);
+      const playerObj = playerRes.rows[0];
       const currentScore = playerObj ? playerObj.score : 1000;
       const newScore = currentScore + pointsGained;
 
       // 2. Save new score
-      await OthergameScore.findOneAndUpdate(
-        { username: player1 },
-        { score: newScore },
-        { upsert: true, new: true }
+      await pgPool.query(
+        `INSERT INTO othergame_scores (username, score)
+         VALUES ($1, $2)
+         ON CONFLICT (username)
+         DO UPDATE SET score = EXCLUDED.score`,
+        [player1, newScore]
       );
 
       // Ensure player 2 exists in database with basic score if not existing
-      const p2Exists = await OthergameScore.findOne({ username: player2 });
-      if (!p2Exists) {
-        await OthergameScore.create({ username: player2, score: 950 });
+      const p2Res = await pgPool.query('SELECT score FROM othergame_scores WHERE username = $1', [player2]);
+      if (p2Res.rows.length === 0) {
+        await pgPool.query(
+          `INSERT INTO othergame_scores (username, score)
+           VALUES ($1, $2)
+           ON CONFLICT (username)
+           DO NOTHING`,
+          [player2, 950]
+        );
       }
 
       // Broadcast update

@@ -1,5 +1,5 @@
 const { createClient } = require('redis');
-const mongoose = require('mongoose');
+const { Pool } = require('pg');
 
 const buildRedisClient = () => {
     if (process.env.REDIS_URL) {
@@ -31,18 +31,44 @@ const connectZombieRushRedis = async () => {
     }
 };
 
-const connectMongo = async () => {
+const connectionString = process.env.DATABASE_URL;
+let pgPool;
+if (connectionString) {
+    const isNeon = connectionString.includes('neon.tech');
+    pgPool = new Pool({
+        connectionString,
+        ssl: isNeon ? { rejectUnauthorized: false } : (process.env.PGSSL === 'true' ? { rejectUnauthorized: false } : false)
+    });
+} else {
+    pgPool = new Pool();
+}
+
+const connectPostgres = async () => {
     try {
-        const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/pvp-leaderboard';
-        await mongoose.connect(mongoUri);
-        console.log("MongoDB terhubung");
+        if (!process.env.DATABASE_URL) {
+            throw new Error("DATABASE_URL tidak terdefinisi di environment");
+        }
+        // Test connection
+        await pgPool.query('SELECT NOW()');
+        console.log("PostgreSQL terhubung");
+
+        // Table creation
+        await pgPool.query(`
+            CREATE TABLE IF NOT EXISTS othergame_scores (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(255) UNIQUE NOT NULL,
+                score INTEGER NOT NULL
+            );
+        `);
+        console.log("Tabel othergame_scores dipastikan ada");
     } catch (err) {
-        console.error("Gagal terhubung ke MongoDB. Endpoint othergame tidak dapat digunakan.", err.message);
+        console.error("Gagal terhubung ke PostgreSQL. Endpoint othergame tidak dapat digunakan.", err.message);
     }
 };
 
 module.exports = {
     zombieRushRedis,
     connectZombieRushRedis,
-    connectMongo
+    pgPool,
+    connectPostgres
 };

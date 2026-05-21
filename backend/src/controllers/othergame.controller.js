@@ -1,5 +1,5 @@
 const { performance } = require('node:perf_hooks');
-const OthergameScore = require('../models/othergame.model');
+const { pgPool } = require('../database/database');
 const realtime = require('../realtime');
 
 const saveScore = async (req, res) => {
@@ -10,10 +10,12 @@ const saveScore = async (req, res) => {
   }
 
   try {
-    await OthergameScore.findOneAndUpdate(
-      { username },
-      { score },
-      { upsert: true, new: true }
+    await pgPool.query(
+      `INSERT INTO othergame_scores (username, score)
+       VALUES ($1, $2)
+       ON CONFLICT (username)
+       DO UPDATE SET score = EXCLUDED.score`,
+      [username, score]
     );
     realtime.broadcast('update', { game: 'roblox' });
     res.status(200).json({ message: 'Score saved successfully' });
@@ -27,10 +29,12 @@ const getScores = async (req, res) => {
   try {
     const totalStart = performance.now();
     const queryStart = performance.now();
-    const topScores = await OthergameScore.find().sort({ score: -1 }).limit(100);
+    const result = await pgPool.query(
+      `SELECT username, score FROM othergame_scores ORDER BY score DESC LIMIT 100`
+    );
     const queryEnd = performance.now();
     const processStart = performance.now();
-    const formattedScores = topScores.map((s) => ({
+    const formattedScores = result.rows.map((s) => ({
       value: s.username,
       username: s.username,
       playerName: s.username,
@@ -44,7 +48,7 @@ const getScores = async (req, res) => {
         queryMs: Number((queryEnd - queryStart).toFixed(2)),
         processMs: Number((processEnd - processStart).toFixed(2)),
         totalMs: Number((processEnd - totalStart).toFixed(2)),
-        source: 'MongoDB'
+        source: 'PostgreSQL'
       }
     });
   } catch (error) {

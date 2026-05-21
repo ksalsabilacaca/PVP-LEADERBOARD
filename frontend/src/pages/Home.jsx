@@ -55,7 +55,7 @@ function Home() {
 
           <p className="text-gray-300 text-xl leading-relaxed mb-10">
             Unified competitive ranking platform with realtime score updates
-            powered by Redis Key-Value Store and MongoDB.
+            powered by Redis Key-Value Store and PostgreSQL (Neon).
           </p>
 
           <div className="flex gap-6">

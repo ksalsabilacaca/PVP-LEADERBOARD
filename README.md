@@ -1,6 +1,6 @@
 # PVP Leaderboard - Mini Project SBD Kelompok 3
 
-Platform leaderboard multi-game yang mengintegrasikan backend API, dua frontend web, serta plugin Minecraft ZombieRush. Data ZombieRush disimpan di Redis melalui plugin dan dibaca oleh backend, sedangkan skor Rock Paper Scissors disimpan di MongoDB dan disajikan melalui API. Seluruh frontend mengonsumsi API dan SSE untuk pembaruan real-time.  
+Platform leaderboard multi-game yang mengintegrasikan backend API, dua frontend web, serta plugin Minecraft ZombieRush. Data ZombieRush disimpan di Redis melalui plugin dan dibaca oleh backend, sedangkan skor Rock Paper Scissors disimpan di PostgreSQL (Neon) dan disajikan melalui API. Seluruh frontend mengonsumsi API dan SSE untuk pembaruan real-time.  
 
 Access our Website : https://minpro-sbd3.live/
 
@@ -10,7 +10,7 @@ Access our Website : https://minpro-sbd3.live/
 - Frontend utama React/Vite sebagai dashboard leaderboard multi-game.
 - Frontend Rock Paper Scissors berbasis Next.js.
 - Plugin Minecraft ZombieRush (Purpur/Paper) sebagai penghasil data game.
-- Redis untuk leaderboard ZombieRush dan MongoDB untuk skor RPS.
+- Redis untuk leaderboard ZombieRush dan PostgreSQL untuk skor RPS.
 - Nginx untuk HTTPS, static frontend, dan reverse proxy API.
 - PM2 untuk menjalankan backend dan frontend RPS di server.
 
@@ -32,7 +32,7 @@ Access our Website : https://minpro-sbd3.live/
 - Dukungan lobby, NPC pemicu match, dan leaderboard in-game.
 
 ### Rock Paper Scissors Web Game
-- Game best-of-3 dengan pencatatan skor ke MongoDB.
+- Game best-of-3 dengan pencatatan skor ke PostgreSQL.
 - Leaderboard global yang diperbarui secara real-time melalui SSE.
 
 ### Main Dashboard
@@ -66,15 +66,15 @@ Access our Website : https://minpro-sbd3.live/
 
 ## Technology Stack
 
-- Backend: Node.js, Express, SSE, Mongoose
+- Backend: Node.js, Express, SSE, pg (PostgreSQL Client)
 - Frontend Dashboard: React, Vite, Tailwind CSS
 - Frontend RPS: Next.js, React
 - Game Server: Purpur/Paper 1.21.1, Java 21, Gradle
-- Data: Redis, MongoDB
+- Data: Redis, PostgreSQL
 
 ## System Architecture
 
-Sistem terdiri dari plugin Minecraft ZombieRush yang menulis data ke Redis, backend API yang membaca Redis serta MongoDB, serta dua frontend web yang menampilkan leaderboard.
+Sistem terdiri dari plugin Minecraft ZombieRush yang menulis data ke Redis, backend API yang membaca Redis serta PostgreSQL, serta dua frontend web yang menampilkan leaderboard.
 
 ## Project Structure
 
@@ -93,8 +93,8 @@ PVP-LEADERBOARD/
 - ZSET untuk leaderboard best score.
 - HASH untuk data pemain (uuid, playerName, bestScore, totalScore, totalKills, totalMatches).
 
-### MongoDB - Rock Paper Scissors
-- Koleksi OthergameScore dengan field `username` (unik) dan `score`.
+### PostgreSQL - Rock Paper Scissors
+- Tabel `othergame_scores` dengan kolom `username` (unik) dan `score`.
 
 ## API Reference
 
@@ -118,7 +118,7 @@ Gunakan placeholder berikut dan jangan menyimpan secret ke repository.
 
 ```env
 PORT=3000
-MONGO_URI=mongodb://localhost:27017/pvp-leaderboard
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/pvp-leaderboard
 
 REDIS_URL=redis://:password@127.0.0.1:6379/0
 REDIS_HOST=127.0.0.1
@@ -177,7 +177,7 @@ Ikuti panduan di `plugin/ZombieRush/README.md` untuk build dan instalasi plugin.
 
 - Nginx melayani static assets, reverse proxy API, dan subdomain RPS.
 - PM2 menjalankan backend dan frontend RPS untuk uptime stabil.
-- Redis dan MongoDB berjalan sebagai service internal.
+- Redis dan PostgreSQL berjalan sebagai service internal.
 
 ## Security Notes
 

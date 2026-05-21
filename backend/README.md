@@ -1,11 +1,11 @@
 # Backend API
 
-Express backend untuk leaderboard multi-game. Menyediakan REST API dan realtime update via SSE. Menggunakan MongoDB untuk OtherGame dan Redis untuk ZombieRush.
+Express backend untuk leaderboard multi-game. Menyediakan REST API dan realtime update via SSE. Menggunakan PostgreSQL (Neon) untuk OtherGame dan Redis untuk ZombieRush.
 
 ## Prasyarat
 
 - Node.js 18+
-- MongoDB
+- PostgreSQL
 - Redis
 
 ## Setup
@@ -32,7 +32,7 @@ Buat file .env (opsional) di folder backend/.
 
 ```env
 PORT=3000
-MONGO_URI=mongodb://localhost:27017/pvp-leaderboard
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/pvp-leaderboard
 
 # Pilih salah satu: REDIS_URL atau konfigurasi host/port
 REDIS_URL=redis://:password@127.0.0.1:6379/0
@@ -63,4 +63,4 @@ Realtime (SSE):
 ## Notes
 
 - SSE dipakai oleh frontend untuk update leaderboard secara realtime.
-- Backend tetap bisa berjalan walau MongoDB down, tetapi endpoint OtherGame akan gagal.
+- Backend tetap bisa berjalan walau PostgreSQL down, tetapi endpoint OtherGame akan gagal.

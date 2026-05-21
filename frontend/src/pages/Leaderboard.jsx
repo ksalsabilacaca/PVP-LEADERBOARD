@@ -253,7 +253,7 @@ function Leaderboard() {
     ? null
     : zombierushTotalMs < rpsTotalMs
     ? { label: "Redis Win", className: "text-emerald-400" }
-    : { label: "MongoDB Win", className: "text-amber-400" };
+    : { label: "PostgreSQL Win", className: "text-amber-400" };
   const currentBackend = activeTab === "rps" ? backendMetrics.rps : backendMetrics.zombierush;
 
   function tabClass(tabName, color = "cyan") {
