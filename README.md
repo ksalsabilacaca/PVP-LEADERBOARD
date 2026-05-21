@@ -211,3 +211,6 @@ Ikuti panduan di `plugin/ZombieRush/README.md` untuk build dan instalasi plugin.
 ## Credits
 
 Mini Project SBD Kelompok 3 - PVP Leaderboard
+
+## AI Use
+AI, secara spesifik, Gemini 3.1 dan 3.5 Flash dipakai untuk membantu pembuatan Frontend demi kemudahan hidup.
