@@ -24,19 +24,21 @@ const unwrapLeaderboardResponse = (payload) => {
     return Array.isArray(payload?.data) ? payload.data : [];
 };
 
-const getLeaderboardBest = async (limit = 50) => {
-    const data = await fetchJson(`${BASE_URL}/zombierush/leaderboard/best?limit=${limit}`);
+const getLeaderboardBest = async (limit = 1000) => {
+    const url = limit ? `${BASE_URL}/zombierush/leaderboard/best?limit=${limit}` : `${BASE_URL}/zombierush/leaderboard/best`;
+    const data = await fetchJson(url);
     return unwrapLeaderboardResponse(data);
 };
 
-const getLeaderboardTotal = async (limit = 50) => {
-    const data = await fetchJson(`${BASE_URL}/zombierush/leaderboard/total?limit=${limit}`);
+const getLeaderboardTotal = async (limit = 1000) => {
+    const url = limit ? `${BASE_URL}/zombierush/leaderboard/total?limit=${limit}` : `${BASE_URL}/zombierush/leaderboard/total`;
+    const data = await fetchJson(url);
     return unwrapLeaderboardResponse(data);
 };
 
 export async function getStats() {
     try {
-        const best = await getLeaderboardBest(50);
+        const best = await getLeaderboardBest();
         const top = best[0];
         return {
             topPlayer: top ? top.playerName || top.username : "Belum ada data",
@@ -56,12 +58,12 @@ export async function getStats() {
 }
 
 export async function getLeaderboard() {
-    const data = await getLeaderboardBest(50);
+    const data = await getLeaderboardBest();
     return mapLeaderboard(data, "Zombie Rush");
 }
 
 export async function getPlayers() {
-    const data = await getLeaderboardBest(50);
+    const data = await getLeaderboardBest();
     return data.map((entry) => ({
         uuid: entry.uuid,
         username: entry.playerName || entry.username || entry.uuid
@@ -105,7 +107,7 @@ export async function getPlayerProfile(uuid) {
 }
 
 export async function getMinecraftLeaderboard() {
-    const data = await getLeaderboardBest(50);
+    const data = await getLeaderboardBest();
     return mapLeaderboard(data, "Zombie Rush");
 }
 
