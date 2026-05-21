@@ -70,8 +70,17 @@ function unwrapResponse(response) {
   };
 }
 
-async function getZombieRushLeaderboard(type) {
-  const response = await fetch(`${API_BASE_URL}/zombierush/leaderboard/${type}`);
+async function getZombieRushLeaderboard(type, limit = 150) {
+  const params = new URLSearchParams();
+
+  if (limit) {
+    params.set("limit", String(limit));
+  }
+
+  const query = params.toString();
+  const url = `${API_BASE_URL}/zombierush/leaderboard/${type}${query ? `?${query}` : ""}`;
+
+  const response = await fetch(url);
 
   if (!response.ok) {
     throw new Error(`Gagal mengambil leaderboard Zombie Rush ${type}.`);
@@ -190,7 +199,7 @@ function Leaderboard() {
 
   async function fetchZombieRushBest() {
     const fetchStart = performance.now();
-    const response = await getZombieRushLeaderboard("best");
+    const response = await getZombieRushLeaderboard("best", 150);
     const fetchEnd = performance.now();
     const { data, metrics } = unwrapResponse(response);
     const normalized = normalizeZombieRush(data);
