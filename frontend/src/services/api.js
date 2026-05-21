@@ -24,13 +24,13 @@ const unwrapLeaderboardResponse = (payload) => {
     return Array.isArray(payload?.data) ? payload.data : [];
 };
 
-const getLeaderboardBest = async (limit = 1000) => {
+const getLeaderboardBest = async (limit = 150) => {
     const url = limit ? `${BASE_URL}/zombierush/leaderboard/best?limit=${limit}` : `${BASE_URL}/zombierush/leaderboard/best`;
     const data = await fetchJson(url);
     return unwrapLeaderboardResponse(data);
 };
 
-const getLeaderboardTotal = async (limit = 1000) => {
+const getLeaderboardTotal = async (limit = 150) => {
     const url = limit ? `${BASE_URL}/zombierush/leaderboard/total?limit=${limit}` : `${BASE_URL}/zombierush/leaderboard/total`;
     const data = await fetchJson(url);
     return unwrapLeaderboardResponse(data);

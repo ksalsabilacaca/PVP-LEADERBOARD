@@ -70,7 +70,7 @@ function unwrapResponse(response) {
   };
 }
 
-async function getZombieRushLeaderboard(type, limit = 1000) {
+async function getZombieRushLeaderboard(type, limit = 150) {
   const params = new URLSearchParams();
 
   if (limit) {
@@ -199,7 +199,7 @@ function Leaderboard() {
 
   async function fetchZombieRushBest() {
     const fetchStart = performance.now();
-    const response = await getZombieRushLeaderboard("best", 1000);
+    const response = await getZombieRushLeaderboard("best", 150);
     const fetchEnd = performance.now();
     const { data, metrics } = unwrapResponse(response);
     const normalized = normalizeZombieRush(data);
