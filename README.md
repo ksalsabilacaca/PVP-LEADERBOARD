@@ -62,6 +62,7 @@ Access our Website : https://minpro-sbd3.live/
 ![Panduan ZombieRush](docs/images/web-play-zombie-rush.png)
 
 ### Halaman Rock Paper Scissors
+
 ![Game Rock Paper Scissors](docs/images/rps-game.png)
 
 ### Gameplay Rock Paper Scissors
@@ -73,7 +74,12 @@ Access our Website : https://minpro-sbd3.live/
 ![Lobby Minecraft](docs/images/minecraft-hub.png)
 
 ### Arena Match ZombieRush
+
 ![Arena ZombieRush](docs/images/minecraft-zombierush-match.png)
+
+### Leaderboard ZombieRush
+
+![Arena ZombieRush](docs/images/minecraft-leaderboard.png)
 
 ## Technology Stack
 
