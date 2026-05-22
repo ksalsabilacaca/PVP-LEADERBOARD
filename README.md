@@ -49,20 +49,31 @@ Access our Website : https://minpro-sbd3.live/
 
 ## Tampilan Aplikasi
 
-1. Dashboard Utama
-	 - ![Dashboard Utama](docs/images/web-homepage.png)
-2. Leaderboard Multi Game
-	 - ![Leaderboard Multi-Game](docs/images/web-leaderboard.png)
-3. Halaman Panduan Bermain ZombieRush
-	 - ![Panduan ZombieRush](docs/images/web-play-zombie-rush.png)
-4. Halaman Rock Paper Scissors
-	 - ![Game Rock Paper Scissors](docs/images/rps-game.png)
-5. Game Play Rock Paper Scissors
-	 - ![Game Play Rock Paper Scissors](docs/images/rps-game-play.png)
-6. Lobby Server Minecraft
-	 - ![Lobby Minecraft](docs/images/minecraft-hub.png)
-7. Arena Match ZombieRush
-	 - ![Arena ZombieRush](docs/images/minecraft-zombierush-match.png)
+### Dashboard Utama
+
+![Dashboard Utama](docs/images/web-homepage.png)
+
+### Leaderboard Multi Game
+
+![Leaderboard Multi-Game](docs/images/web-leaderboard.png)
+
+### Halaman Panduan Bermain ZombieRush
+
+![Panduan ZombieRush](docs/images/web-play-zombie-rush.png)
+
+### Halaman Rock Paper Scissors
+![Game Rock Paper Scissors](docs/images/rps-game.png)
+
+### Gameplay Rock Paper Scissors
+
+![Game Play Rock Paper Scissors](docs/images/rps-game-play.png)
+
+### Lobby Server Minecraft
+
+![Lobby Minecraft](docs/images/minecraft-hub.png)
+
+### Arena Match ZombieRush
+![Arena ZombieRush](docs/images/minecraft-zombierush-match.png)
 
 ## Technology Stack
 
