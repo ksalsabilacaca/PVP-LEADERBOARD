@@ -2,19 +2,19 @@ const BASE_URL = "https://minpro-sbd3.live";
 
 // Words lists for coherent username generation
 const prefixes = [
-  "Super", "Mega", "Shadow", "Alpha", "Hyper", "Golden", "Dark", "Ghost",
-  "Swift", "Iron", "Quantum", "Apex", "Nova", "Cyber", "Frost", "Mystic",
-  "Electric", "Blazing", "Storm", "Elite", "Void", "Spectral", "Cosmic",
-  "Feral", "Savage", "Solar", "Lunar", "Rogue", "Wild", "Glacial", "Sky", "Hydro",
-  "Xeno", "alk", "Jittery", "Tsu_", "Yu"
+  "Arc", "Astral", "Blitz", "Brave", "Cipher", "Crimson", "Dusk", "Echo",
+  "Ember", "Fable", "Feral", "Flux", "Frost", "Gale", "Glitch", "Grim",
+  "Halo", "Havoc", "Ion", "Jade", "Karma", "Lumen", "Mirage", "Nexus",
+  "Nova", "Onyx", "Phantom", "Prime", "Pulse", "Rift", "Rune", "Sable",
+  "Solar", "Specter", "Storm", "Tempest", "Titan", "Viper", "Void", "Zen"
 ];
 
 const suffixes = [
-  "Knight", "Ninja", "Warrior", "Hunter", "Rogue", "Slayer", "Dragon", "Phoenix",
-  "Titan", "Raptor", "Viper", "Cobra", "Wolf", "Gamer", "Pro", "Master",
-  "Gladiator", "Specter", "Reaper", "Challenger", "Beast", "Paladin", "Samurai",
-  "Assassin", "Wizard", "Monk", "Sentry", "Vanguard", "Warlock", "Outlaw", "Chord",
-  "mium", "v1a", "kuyomi", "tin", "zuki"
+  "Blade", "Breaker", "Cipher", "Crusader", "Dancer", "Drifter", "Enigma", "Fang",
+  "Forge", "Glider", "Harbinger", "Hawk", "Hunter", "Invoker", "Keeper", "Lancer",
+  "Monk", "Nomad", "Oracle", "Outrider", "Paladin", "Phantom", "Ranger", "Raptor",
+  "Reaper", "Rogue", "Samurai", "Sentinel", "Shade", "Shifter", "Slayer", "Vanguard",
+  "Warden", "Whisper", "Wizard", "Wraith"
 ];
 
 function generateRandomName() {

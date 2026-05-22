@@ -83,9 +83,14 @@ Access our Website : https://minpro-sbd3.live/
 
 ## Redis vs MongoDB
 
-![Comparison 1](docs/images/test1.png)
-![Comparison 2](docs/images/test2.png)
-![Comparison 3](docs/images/test3.png)
+![Comparison 1](docs/images/dump1.png)
+![Comparison 2](docs/images/dump2.png)
+![Comparison 3](docs/images/dump3.png)
+![Comparison 4](docs/images/dump4.png)
+![Comparison 5](docs/images/dump5.png)
+![Comparison 6](docs/images/dump6.png)
+![Comparison 7](docs/images/dump7.png)
+
 
 
 ## Technology Stack
@@ -196,6 +201,12 @@ npm run dev
 4) Plugin ZombieRush
 
 Ikuti panduan di `plugin/ZombieRush/README.md` untuk build dan instalasi plugin.
+
+5) Dummy Data Test
+
+```bash
+node run-parallel.js
+```
 
 ## Production Deployment Summary
 
