@@ -79,7 +79,14 @@ Access our Website : https://minpro-sbd3.live/
 
 ### Leaderboard ZombieRush
 
-![Arena ZombieRush](docs/images/minecraft-leaderboard.png)
+![Leaderboard ZombieRush](docs/images/minecraft-leaderboard.png)
+
+## Redis vs MongoDB
+
+![Comparison 1](docs/images/test1.png)
+![Comparison 2](docs/images/test2.png)
+![Comparison 3](docs/images/test3.png)
+
 
 ## Technology Stack
 
