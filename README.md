@@ -91,7 +91,45 @@ Access our Website : https://minpro-sbd3.live/
 ![Comparison 6](docs/images/dump6.png)
 ![Comparison 7](docs/images/dump7.png)
 
+## Testing dan Validasi Sistem
 
+Pengujian dilakukan untuk memastikan seluruh komponen pada sistem PVP Leaderboard berjalan sesuai dengan tujuan project, mulai dari game Minecraft Zombie Rush, game web Rock Paper Scissors, backend API, Redis, MongoDB, SSE realtime, hingga tampilan dashboard frontend.
+
+Pengujian ini tidak hanya berfokus pada tampilan website, tetapi juga memastikan bahwa alur data dari game menuju database, dari database menuju backend, dan dari backend menuju frontend sudah berjalan dengan benar.
+
+### Tujuan Pengujian
+
+Tujuan dari pengujian sistem ini adalah:
+
+1. Memastikan plugin ZombieRush dapat mengirim dan menyimpan data skor pemain ke Redis.
+2. Memastikan Redis menyimpan leaderboard ZombieRush menggunakan struktur data yang sesuai.
+3. Memastikan backend dapat membaca data ZombieRush dari Redis.
+4. Memastikan game Rock Paper Scissors dapat menyimpan dan membaca skor dari MongoDB.
+5. Memastikan backend dapat menyediakan endpoint API untuk frontend utama dan frontend RPS.
+6. Memastikan frontend utama dapat menampilkan leaderboard ZombieRush dan Rock Paper Scissors.
+7. Memastikan fitur SSE realtime dapat digunakan untuk pembaruan data skor.
+8. Memastikan website production dapat diakses melalui domain yang sudah dideploy.
+9. Memastikan perbandingan waktu proses Redis dan MongoDB dapat ditampilkan pada dashboard.
+
+### Lingkup Pengujian
+
+Pengujian mencakup beberapa bagian utama:
+
+| Bagian yang Diuji | Tujuan Pengujian | Hasil yang Diharapkan |
+| --- | --- | --- |
+| Website utama | Memastikan frontend utama dapat diakses melalui domain production | Website `https://minpro-sbd3.live` dapat dibuka |
+| Halaman leaderboard | Memastikan leaderboard multi-game tampil dengan benar | Data ZombieRush dan RPS muncul pada tabel leaderboard |
+| Halaman panduan ZombieRush | Memastikan informasi server Minecraft tersedia | IP server, port Java, port Bedrock, dan cara bermain tampil |
+| Frontend RPS | Memastikan game RPS dapat diakses dan dimainkan | Halaman RPS terbuka dan pemain dapat menjalankan permainan |
+| Gameplay RPS | Memastikan hasil permainan dapat menghasilkan skor | Skor pemain bertambah setelah permainan selesai |
+| Server Minecraft | Memastikan player dapat masuk ke server | Player berhasil masuk ke lobby atau Hub |
+| NPC ZombieRush | Memastikan player dapat memulai match | Player dapat klik atau pukul NPC untuk masuk ke arena |
+| Arena ZombieRush | Memastikan match berjalan | Zombie muncul, timer berjalan, dan skor dapat dihitung |
+| Redis ZombieRush | Memastikan data skor tersimpan di Redis | Data masuk ke `zombierush:leaderboard:best` dan `zombierush:player:{uuid}` |
+| MongoDB RPS | Memastikan skor RPS tersimpan di MongoDB | Data skor RPS tersimpan dan dapat dibaca kembali |
+| Backend API | Memastikan endpoint mengembalikan response JSON | Endpoint API mengembalikan data leaderboard |
+| SSE realtime | Memastikan frontend dapat menerima sinyal update | Frontend dapat melakukan refresh data saat ada update |
+| Metrics Redis vs MongoDB | Memastikan waktu proses dapat dibandingkan | Frontend metrics, backend metrics, dan pemenang tampil |
 
 ## Technology Stack
 
