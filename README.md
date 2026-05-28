@@ -49,39 +49,127 @@ Access our Website : https://minpro-sbd3.live/
 
 ## Tampilan Aplikasi
 
+Bagian ini menampilkan dokumentasi visual dari sistem PVP Leaderboard yang sudah dibuat dan dideploy. Screenshot digunakan untuk memperlihatkan tampilan utama aplikasi, halaman leaderboard, halaman panduan bermain ZombieRush, game Rock Paper Scissors, serta integrasi dengan server Minecraft.
+
 ### Dashboard Utama
+
+Halaman dashboard utama merupakan halaman awal dari website PVP Leaderboard. Pada halaman ini, user dapat melihat identitas project, navigasi utama, serta akses menuju halaman leaderboard, halaman Rock Paper Scissors, dan halaman panduan bermain ZombieRush. Tampilan ini menjadi pintu masuk utama sebelum user memilih fitur yang ingin digunakan.
 
 ![Dashboard Utama](docs/images/web-homepage.png)
 
 ### Leaderboard Multi Game
 
+Halaman leaderboard multi-game digunakan untuk menampilkan data peringkat dari dua game yang berbeda, yaitu ZombieRush dan Rock Paper Scissors. Pada halaman ini terdapat tab untuk melihat leaderboard ZombieRush, leaderboard Rock Paper Scissors, dan tampilan gabungan melalui mode All Game. Data ZombieRush berasal dari Redis, sedangkan data Rock Paper Scissors berasal dari MongoDB.
+
 ![Leaderboard Multi-Game](docs/images/web-leaderboard.png)
+
+Pada mode All Game, sistem juga menampilkan perbandingan waktu proses antara Redis dan MongoDB. Perbandingan ini mencakup frontend metrics dan backend metrics, sehingga user dapat melihat waktu pengambilan data, waktu proses data, total waktu, serta hasil perbandingan seperti `Redis Win` atau `MongoDB Win`.
 
 ### Halaman Panduan Bermain ZombieRush
 
+Halaman ini berisi panduan bagi player yang ingin masuk ke server Minecraft dan memainkan ZombieRush. Informasi yang ditampilkan mencakup server address, port untuk Minecraft Bedrock Edition, serta langkah-langkah bermain mulai dari masuk server, menuju Hub, klik atau pukul NPC ZombieRush, hingga skor tersimpan dan muncul di leaderboard.
+
 ![Panduan ZombieRush](docs/images/web-play-zombie-rush.png)
+
+Halaman ini dibuat agar player tidak perlu mencari informasi server secara manual. Player cukup membuka halaman Play ZombieRush, menyalin IP server, lalu mengikuti instruksi yang tersedia.
 
 ### Halaman Rock Paper Scissors
 
+Halaman Rock Paper Scissors merupakan frontend khusus untuk game RPS berbasis Next.js. Pada halaman ini, user dapat memasukkan username, memulai permainan, dan melihat leaderboard global Rock Paper Scissors. Data skor dari game ini dikirim ke backend dan disimpan ke MongoDB.
+
 ![Game Rock Paper Scissors](docs/images/rps-game.png)
+
+Leaderboard pada halaman RPS memperlihatkan daftar player berdasarkan skor tertinggi. Halaman ini juga menjadi bukti bahwa frontend RPS sudah terhubung dengan backend API dan dapat menampilkan data dari database.
 
 ### Gameplay Rock Paper Scissors
 
+Screenshot ini menunjukkan tampilan saat permainan Rock Paper Scissors sedang berjalan. User dapat memilih Rock, Paper, atau Scissors, kemudian sistem akan menentukan hasil ronde berdasarkan pilihan user dan pilihan lawan. Setelah permainan selesai, skor user akan diperbarui dan dikirim ke backend.
+
 ![Game Play Rock Paper Scissors](docs/images/rps-game-play.png)
+
+Gameplay ini membuktikan bahwa halaman RPS tidak hanya menampilkan leaderboard, tetapi juga memiliki alur permainan yang berjalan dari input user, perhitungan hasil ronde, pembaruan skor, hingga penyimpanan data.
 
 ### Lobby Server Minecraft
 
+Screenshot ini menunjukkan lobby atau Hub server Minecraft. Di area ini terdapat NPC ZombieRush yang dapat diklik atau dipukul oleh player untuk memulai match. Lobby juga berfungsi sebagai tempat awal player sebelum masuk ke arena ZombieRush.
+
 ![Lobby Minecraft](docs/images/minecraft-hub.png)
+
+Pada lobby, player diarahkan untuk berinteraksi dengan NPC ZombieRush. Setelah interaksi dilakukan, sistem akan mengecek ketersediaan arena. Jika arena tersedia, player langsung masuk ke match. Jika arena penuh, player akan masuk ke antrean.
 
 ### Arena Match ZombieRush
 
+Screenshot ini menunjukkan kondisi saat player sedang berada di arena ZombieRush. Di dalam arena, zombie akan muncul selama match berlangsung. Player menggunakan item yang diberikan sistem, seperti Diamond Sword dan Shield, untuk mengalahkan zombie dan mengumpulkan skor.
+
 ![Arena ZombieRush](docs/images/minecraft-zombierush-match.png)
+
+Match ZombieRush berlangsung selama durasi tertentu. Sistem menghitung kill, skor, timer, serta kondisi akhir match seperti waktu habis, player mati, atau player keluar. Setelah match selesai, plugin akan menyimpan data hasil permainan ke Redis.
 
 ### Leaderboard ZombieRush
 
+Screenshot ini menunjukkan leaderboard ZombieRush di dalam server Minecraft. Leaderboard ini menampilkan daftar player dengan skor terbaik. Data leaderboard berasal dari skor yang tersimpan setelah player menyelesaikan match ZombieRush.
+
 ![Leaderboard ZombieRush](docs/images/minecraft-leaderboard.png)
 
+Leaderboard ini menjadi bukti bahwa integrasi antara plugin ZombieRush dan sistem penyimpanan data sudah berjalan. Data yang berasal dari aktivitas player di Minecraft dapat disimpan, diurutkan, dan ditampilkan kembali sebagai peringkat pemain.
+
 ## Redis vs MongoDB
+
+Bagian ini menampilkan hasil pengujian perbandingan waktu proses antara Redis dan MongoDB pada sistem PVP Leaderboard. Pada project ini, Redis digunakan untuk menyimpan leaderboard ZombieRush, sedangkan MongoDB digunakan untuk menyimpan skor Rock Paper Scissors.
+
+Redis digunakan pada ZombieRush karena data leaderboard membutuhkan proses pengurutan skor yang cepat. Struktur data utama yang digunakan adalah Redis Sorted Set atau ZSET, yaitu struktur data yang menyimpan member unik dengan score tertentu. Struktur ini cocok untuk leaderboard karena data dapat diurutkan berdasarkan score tertinggi. Dalam project ini, UUID player menjadi member, sedangkan best score player menjadi score. Redis juga menyimpan detail pemain menggunakan Hash, seperti username, bestScore, totalScore, totalKills, matches, lastScore, lastEndReason, dan lastPlayedAt. Redis sendiri memang menyediakan Sorted Set untuk use case seperti leaderboard.  
+
+MongoDB digunakan pada Rock Paper Scissors karena data skor game web disimpan dalam bentuk dokumen. MongoDB menyimpan data sebagai document di dalam collection, sehingga cocok untuk menyimpan data seperti username dan score pemain RPS. Pada project ini, collection RPS menyimpan data player dan skor yang kemudian dibaca oleh backend untuk ditampilkan pada leaderboard. MongoDB menyimpan data record sebagai BSON document di dalam collection.  
+
+### Tujuan Perbandingan
+
+Tujuan dari pengujian ini adalah untuk melihat perbedaan waktu proses antara dua sumber data yang digunakan dalam project:
+
+| Game | Database | Struktur Data | Fungsi |
+| --- | --- | --- | --- |
+| ZombieRush | Redis | Sorted Set dan Hash | Menyimpan leaderboard best score dan detail player |
+| Rock Paper Scissors | MongoDB | Collection dan Document | Menyimpan skor player RPS |
+
+### Metrik yang Dibandingkan
+
+Pada dashboard, sistem menampilkan beberapa metrik waktu proses:
+
+| Metrik | Penjelasan |
+| --- | --- |
+| Frontend Fetch | Waktu yang dibutuhkan browser untuk mengambil data dari backend API |
+| Frontend Process | Waktu yang dibutuhkan frontend untuk memproses data sebelum ditampilkan |
+| Frontend Total | Total waktu frontend, yaitu fetch ditambah process |
+| Backend Query | Waktu yang dibutuhkan backend untuk mengambil data dari Redis atau MongoDB |
+| Backend Process | Waktu yang dibutuhkan backend untuk mengolah data setelah query database |
+| Backend Total | Total waktu backend, yaitu query ditambah process |
+| Selisih Total Waktu | Perbedaan total waktu antara ZombieRush dan Rock Paper Scissors |
+| Redis Win / MongoDB Win | Penanda database yang memiliki total waktu lebih kecil pada pengujian tersebut |
+
+Pengukuran waktu frontend dilakukan dari sisi browser saat mengambil dan memproses data. Pengukuran seperti ini umumnya menggunakan timestamp resolusi tinggi dalam satuan milidetik, misalnya melalui `performance.now()` pada browser.
+
+### Rumus Perhitungan
+
+Total waktu end-to-end dihitung dari gabungan waktu frontend dan backend:
+
+```text
+ZombieRush Total = Frontend Total ZombieRush + Backend Total ZombieRush
+
+RPS Total = Frontend Total RPS + Backend Total RPS
+
+Selisih Total = |ZombieRush Total - RPS Total|
+```
+
+### Hasil Pengujian
+
+Berdasarkan hasil pengujian pada dashboard, Redis lebih cepat pada skenario leaderboard ZombieRush. Hal ini terlihat dari beberapa kali pengujian yang menunjukkan nilai total waktu ZombieRush lebih kecil dibandingkan total waktu Rock Paper Scissors.
+
+Pada sisi backend, Redis memiliki waktu query yang rendah karena leaderboard ZombieRush menggunakan Sorted Set. Backend mengambil ranking dari Redis Sorted Set, lalu mengambil detail player dari Redis Hash. Sementara itu, MongoDB mengambil data skor RPS dari collection, kemudian backend mengolah data tersebut sebelum dikirim ke frontend.
+
+Pada sisi frontend, waktu dapat berubah-ubah karena dipengaruhi oleh proses fetch, kondisi jaringan, ukuran response, cache browser, dan proses rendering data. Karena itu, hasil pengujian ditampilkan dalam beberapa screenshot agar terlihat bahwa perbandingan dilakukan lebih dari satu kali.
+
+### Bukti Pengujian
+
+Berikut adalah beberapa screenshot hasil pengujian Redis vs MongoDB pada dashboard:
 
 ![Comparison 1](docs/images/dump1.png)
 ![Comparison 2](docs/images/dump2.png)
@@ -91,13 +179,17 @@ Access our Website : https://minpro-sbd3.live/
 ![Comparison 6](docs/images/dump6.png)
 ![Comparison 7](docs/images/dump7.png)
 
+### Kesimpulan Perbandingan
+
+Dari hasil pengujian, Redis lebih cepat pada skenario leaderboard ZombieRush karena menggunakan Sorted Set untuk pengurutan skor dan Hash untuk detail player. MongoDB tetap digunakan pada Rock Paper Scissors karena lebih cocok untuk penyimpanan data berbentuk dokumen seperti username dan score.
+
 ## Testing dan Validasi Sistem
 
 Pengujian dilakukan untuk memastikan seluruh komponen pada sistem PVP Leaderboard berjalan sesuai dengan tujuan project, mulai dari game Minecraft Zombie Rush, game web Rock Paper Scissors, backend API, Redis, MongoDB, SSE realtime, hingga tampilan dashboard frontend.
 
 Pengujian ini tidak hanya berfokus pada tampilan website, tetapi juga memastikan bahwa alur data dari game menuju database, dari database menuju backend, dan dari backend menuju frontend sudah berjalan dengan benar.
 
-### Tujuan Pengujian
+### Tujuan Pengujian Sistem
 
 Tujuan dari pengujian sistem ini adalah:
 
@@ -111,7 +203,7 @@ Tujuan dari pengujian sistem ini adalah:
 8. Memastikan website production dapat diakses melalui domain yang sudah dideploy.
 9. Memastikan perbandingan waktu proses Redis dan MongoDB dapat ditampilkan pada dashboard.
 
-### Lingkup Pengujian
+### Lingkup Pengujian Sistem
 
 Pengujian mencakup beberapa bagian utama:
 
